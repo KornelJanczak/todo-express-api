@@ -1,3 +1,4 @@
+import routes from "./routes";
 import express, { Application, Request, Response } from "express";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
@@ -14,3 +15,5 @@ app.use(express.json());
 app.listen(PORT, () => {
   console.log("Server is running on port " + PORT);
 });
+
+app.use("/", routes());
