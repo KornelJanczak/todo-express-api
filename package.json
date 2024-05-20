@@ -5,10 +5,12 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-validator": "^7.0.1",
+    "node-pg-migrate": "^7.3.2",
     "pg": "^8.11.5"
   },
   "scripts": {
-    "start": "nodemon"
+    "start": "nodemon",
+    "migrate": "node-pg-migrate"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.7",
