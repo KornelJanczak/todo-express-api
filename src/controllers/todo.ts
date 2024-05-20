@@ -1,13 +1,21 @@
 import { Request, Response } from "express";
-import { insertTodo } from "../db/todo";
+import { insertTodo } from "../db/todo/insertTodo";
+import { validationResult, matchedData } from "express-validator";
+import { Todo } from "../types/todo";
 
 export const createTodo = async (req: Request, res: Response) => {
-  console.log(req.body);
+  const result = validationResult(req);
 
-  const todo = await insertTodo(req.body.content, req.body.priority);
+  if (!result.isEmpty()) return res.status(400).send({ msg: result.array() });
 
-  if (!todo) res.sendStatus(400);
+  const data: Partial<Todo> = matchedData(req);
 
-  
+  if (!data.content || !data.priority)
+    return res.status(400).send({ msg: "Content cannot be empty" });
+
+  const todo = await insertTodo(data.content, data.priority);
+
+  if (!todo) return res.sendStatus(400);
+
   return res.status(200).send({ msg: todo });
 };

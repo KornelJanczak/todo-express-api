@@ -1,7 +1,5 @@
 import routes from "./routes";
-import express, { Application, Request, Response } from "express";
-import bodyParser from "body-parser";
-import cookieParser from "cookie-parser";
+import express, { Application } from "express";
 import dotenv from "dotenv";
 
 dotenv.config();
