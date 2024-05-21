@@ -8,7 +8,7 @@ const createTodoText =
 const updateTodoText =
   "UPDATE todos SET content = $1, priority = $2 WHERE id = $3";
 
-const deleteTodoText = "DELETE FROM todos WHERE id = $1";
+const deleteTodoText = (id: string) => `DELETE FROM todos WHERE id = $${id}`;
 
 // Functions
 export const createTodoQuery = async (content: string, priority: Priority) =>
@@ -17,5 +17,8 @@ export const createTodoQuery = async (content: string, priority: Priority) =>
 export const updateTodoQuery = async (content: string, priority: Priority) =>
   await todoQuery({ content, priority, queryText: updateTodoText });
 
-export const deleteTodoQuery = async (content: string, priority: Priority) =>
-  await todoQuery({ content, priority, queryText: deleteTodoText });
+export const deleteTodoQuery = async (
+  content: string,
+  priority: Priority,
+  id: string
+) => await todoQuery({ content, priority, queryText: deleteTodoText(id) });
