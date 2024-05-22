@@ -7,15 +7,22 @@ export const validationTodo = (
   res: Response,
   next: NextFunction
 ) => {
-  const result = validationResult(req);
+  const validateResult = validationResult(req);
 
-  if (!result.isEmpty()) return res.status(400).send({ msg: result.array() });
+  if (!validateResult.isEmpty())
+    return res.status(400).send({ msg: validateResult.array() });
 
   const data: Partial<Todo> = matchedData(req);
 
   if (!data.content || !data.priority)
     return res.status(400).send({ msg: "Content cannot be empty" });
 
-  req.todo = data;
+  const result: Partial<Todo> = {
+    id: req.params.id,
+    content: data.content,
+    priority: data.priority,
+  };
+
+  req.todo = result;
   next();
 };

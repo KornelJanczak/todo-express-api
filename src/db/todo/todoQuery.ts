@@ -2,20 +2,18 @@ import { db } from "..";
 import { Priority } from "../../types/todo";
 
 interface TodoQuery {
-  id?: string;
-  content: string;
+  content: string | null;
   queryText: string;
-  priority: Priority;
+  priority: Priority | null;
 }
 
 export const todoQuery = async ({
-  id,
   content,
   priority,
   queryText,
 }: TodoQuery) => {
-  if (!content || !priority) return null;
-
+  console.log(content, priority, queryText); 
+  
   try {
     const values = [content, priority];
     const result = await db.query(queryText, values);
