@@ -14,9 +14,6 @@ export const validationTodo = (
 
   const data: Partial<Todo> = matchedData(req);
 
-  if (!data.content || !data.priority)
-    return res.status(400).send({ msg: "Content cannot be empty" });
-
   const result: Partial<Todo> = {
     id: req.params.id,
     content: data.content,

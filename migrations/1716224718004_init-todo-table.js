@@ -11,8 +11,8 @@ exports.shorthands = undefined;
 exports.up = (pgm) => {
   pgm.createTable("todos", {
     id: "id",
-    content: { type: "text", notNull: true },
-    priority: { type: "text", notNull: true },
+    content: { type: "text" },
+    priority: { type: "text" },
   });
 };
 

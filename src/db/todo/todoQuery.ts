@@ -2,20 +2,39 @@ import { db } from "..";
 import { Priority } from "../../types/todo";
 
 interface TodoQuery {
-  content: string | null;
+  id?: string;
+  content?: string | null;
+  priority?: Priority | null;
   queryText: string;
-  priority: Priority | null;
+  queryType: "create" | "update" | "delete";
 }
 
 export const todoQuery = async ({
+  id,
   content,
   priority,
   queryText,
+  queryType,
 }: TodoQuery) => {
-  console.log(content, priority, queryText); 
-  
+  console.log(id, content, priority, queryText);
+
   try {
-    const values = [content, priority];
+    let values: any[] = [content, priority];
+
+    switch (queryType) {
+      case "create":
+        values = [content, priority];
+        break;
+      case "update":
+        values = [content, priority, id];
+        break;
+      case "delete":
+        values = [id];
+        break;
+      default:
+        throw new Error("Invalid query type");
+    }
+
     const result = await db.query(queryText, values);
     return result;
   } catch (err) {
