@@ -1,6 +1,7 @@
 //Queries for todo table
-export const createTodoText =
-  "INSERT INTO todos(content, priority) VALUES($1, $2) RETURNING *";
+export const getTodoText = "SELECT * FROM todos";
+
+export const createTodoText = `INSERT INTO todos(content, priority) VALUES($1, $2) RETURNING *`;
 
 export const updateTodoText = `
 UPDATE todos 

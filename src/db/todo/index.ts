@@ -4,18 +4,22 @@ import {
   createTodoText,
   updateTodoText,
   deleteTodoText,
+  getTodoText,
 } from "./todoQueriesText";
 
 // Functions
-export const createTodoQuery = async (
-  content: string,
-  priority: Priority
-) =>
+export const getTodo = async () =>
   await todoQuery({
+    queryType: "get",
+    queryText: getTodoText,
+  });
+
+export const createTodoQuery = async (content: string, priority: Priority) =>
+  await todoQuery({
+    queryType: "create",
+    queryText: createTodoText,
     content,
     priority,
-    queryText: createTodoText,
-    queryType: "create",
   });
 
 export const updateTodoQuery = async (
@@ -24,16 +28,16 @@ export const updateTodoQuery = async (
   priority?: Priority | null
 ) =>
   await todoQuery({
+    queryType: "update",
+    queryText: updateTodoText,
     id,
     content,
     priority,
-    queryText: updateTodoText,
-    queryType: "update",
   });
 
 export const deleteTodoQuery = async (id: string) =>
   await todoQuery({
-    id,
-    queryText: deleteTodoText,
     queryType: "delete",
+    queryText: deleteTodoText,
+    id,
   });

@@ -6,7 +6,7 @@ interface TodoQuery {
   content?: string | null;
   priority?: Priority | null;
   queryText: string;
-  queryType: "create" | "update" | "delete";
+  queryType: "create" | "update" | "delete" | "get";
 }
 
 export const todoQuery = async ({
@@ -19,7 +19,8 @@ export const todoQuery = async ({
   console.log(id, content, priority, queryText);
 
   try {
-    let values: any[] = [content, priority];
+    let values: any[] | null = [content, priority];
+    let result;
 
     switch (queryType) {
       case "create":
@@ -31,11 +32,15 @@ export const todoQuery = async ({
       case "delete":
         values = [id];
         break;
+      case "get":
+        return await db.query(queryText);
+
       default:
         throw new Error("Invalid query type");
     }
 
-    const result = await db.query(queryText, values);
+    result = await db.query(queryText, values);
+
     return result;
   } catch (err) {
     console.error(err);

@@ -1,6 +1,11 @@
 import { Request, Response } from "express";
 import { createTodoQuery, updateTodoQuery, deleteTodoQuery } from "../db/todo";
 
+export const getTodo = async (req: Request, res: Response) => {
+  const { todo } = req;
+  return res.status(200).send({ todo });
+};
+
 export const createTodo = async (req: Request, res: Response) => {
   const { todo } = req;
   if (!todo?.content || !todo.priority) return res.sendStatus(400);
