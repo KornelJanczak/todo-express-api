@@ -1,9 +1,20 @@
 import { Request, Response } from "express";
-import { createTodoQuery, updateTodoQuery, deleteTodoQuery } from "../db/todo";
+import {
+  createTodoQuery,
+  updateTodoQuery,
+  deleteTodoQuery,
+  getTodosQuery,
+  getTodoQuery,
+} from "../db/todo";
 
 export const getTodo = async (req: Request, res: Response) => {
-  const { todo } = req;
+  const todo = await getTodoQuery(req.params.id);
   return res.status(200).send({ todo });
+};
+
+export const getTodos = async (_: Request, res: Response) => {
+  const todos = await getTodosQuery();
+  return res.status(200).send({ todos });
 };
 
 export const createTodo = async (req: Request, res: Response) => {
