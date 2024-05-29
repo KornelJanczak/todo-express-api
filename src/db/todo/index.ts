@@ -5,13 +5,21 @@ import {
   updateTodoText,
   deleteTodoText,
   getTodoText,
+  getTodosText,
 } from "./todoQueriesText";
 
 // Functions
-export const getTodo = async () =>
+export const getTodoQuery = async (id: string) =>
   await todoQuery({
     queryType: "get",
     queryText: getTodoText,
+    id,
+  });
+
+export const getTodosQuery = async () =>
+  await todoQuery({
+    queryType: "getAll",
+    queryText: getTodosText,
   });
 
 export const createTodoQuery = async (content: string, priority: Priority) =>
