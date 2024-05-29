@@ -1,5 +1,7 @@
 //Queries for todo table
-export const getTodoText = "SELECT * FROM todos";
+export const getTodosText = "SELECT * FROM todos";
+
+export const getTodoText = "SELECT * FROM todos WHERE id = $1"
 
 export const createTodoText = `INSERT INTO todos(content, priority) VALUES($1, $2) RETURNING *`;
 
