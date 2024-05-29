@@ -1,12 +1,18 @@
-import { createTodo, updateTodo, deleteTodo } from "../controllers/todo";
+import {
+  getTodos,
+  createTodo,
+  updateTodo,
+  deleteTodo,
+  getTodo,
+} from "../controllers/todo";
 import { Router } from "express";
 import { checkSchema } from "express-validator";
 import { createTodoSchema, updateTodoSchema } from "../schemas/todo";
 import { validationTodo } from "../middlewares/validationMiddleware";
-import { getTodo } from "../db/todo";
 
 export default (router: Router) => {
-  router.get("/api/todo", getTodo);
+  router.get("/api/todo", getTodos);
+  router.get("/api/todo/:id", getTodo);
   router.post(
     "/api/todo",
     checkSchema(createTodoSchema),
