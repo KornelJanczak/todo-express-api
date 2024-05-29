@@ -1,12 +1,13 @@
 import { db } from "..";
 import { Priority } from "../../types/todo";
+import { type ApiRoutes } from "../../types";
 
 interface TodoQuery {
   id?: string;
   content?: string | null;
   priority?: Priority | null;
   queryText: string;
-  queryType: "create" | "update" | "delete" | "get";
+  queryType: ApiRoutes;
 }
 
 export const todoQuery = async ({
@@ -33,8 +34,10 @@ export const todoQuery = async ({
         values = [id];
         break;
       case "get":
+        values = [id];
+        return await db.query(queryText, values);
+      case "getAll":
         return await db.query(queryText);
-
       default:
         throw new Error("Invalid query type");
     }
