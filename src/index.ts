@@ -1,6 +1,7 @@
 import routes from "./routes";
 import express, { Application } from "express";
 import dotenv from "dotenv";
+import passport from "passport";
 
 dotenv.config();
 
@@ -14,4 +15,5 @@ app.listen(PORT, () => {
   console.log("Server is running on port " + PORT);
 });
 
+app.use(passport.initialize());
 app.use("/", routes());
