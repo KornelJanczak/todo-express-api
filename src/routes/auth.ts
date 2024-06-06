@@ -1,6 +1,6 @@
 import { Router } from "express";
 import passport from "passport";
-import "../strategies/github-strategy";
+// import "../strategies/github-strategy";
 import { successfullAuthentication } from "../strategies/github-strategy";
 
 export default (router: Router) => {
@@ -10,7 +10,9 @@ export default (router: Router) => {
     passport.authenticate(
       "github",
       { failureRedirect: "/login" },
-      successfullAuthentication
+      (req: Request, res: Response) => {
+        console.log("Successfull auth");
+      }
     )
   );
 };
