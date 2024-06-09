@@ -1,12 +1,14 @@
 import { Router } from "express";
 import passport from "passport";
-// import "../strategies/github-strategy";
-import { successfullAuthentication } from "../strategies/github-strategy";
+// import { successfullAuthentication } from "../strategies/github-strategy";
 
 export default (router: Router) => {
-  router.get("/api/auth/github", passport.authenticate("github"));
   router.get(
-    "/auth/github/callback",
+    "/api/auth/github",
+    passport.authenticate("github", { scope: ["user:email"] })
+  );
+  router.get(
+    "/api/auth/github/callback",
     passport.authenticate(
       "github",
       { failureRedirect: "/login" },
@@ -15,4 +17,11 @@ export default (router: Router) => {
       }
     )
   );
+  router.get(
+    "/api/auth/google",
+    passport.authenticate("google", { scope: ["profile"] })
+  );
+  router.get("/api/auth/google/callback", passport.authenticate("google"), () => {
+    console.log("chuj");
+  });
 };
