@@ -14,6 +14,11 @@ exports.up = (pgm) => {
     content: { type: "text" },
     priority: { type: "text" },
   });
+
+  pgm.createTable("users", {
+    id: "id",
+    email: { type: "text" },
+  });
 };
 
 /**
@@ -23,4 +28,5 @@ exports.up = (pgm) => {
  */
 exports.down = (pgm) => {
   pgm.dropTable("todos");
+  pgm.dropColumn("users");
 };
