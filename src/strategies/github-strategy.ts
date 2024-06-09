@@ -1,5 +1,5 @@
 import "dotenv/config";
-import passport, { use } from "passport";
+import passport from "passport";
 import { Strategy, type StrategyOptions } from "passport-github";
 import { Request, Response } from "express";
 
@@ -7,8 +7,7 @@ const strategyOptions: StrategyOptions = {
   clientID: process.env.GITHUB_CLIENT_ID || "",
   clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
   callbackURL: process.env.GITHUB_REDIRECT_URL || "",
-
-  scope: ["identify"],
+  scope: ["user:email"],
 };
 
 passport.serializeUser((user, done) => {
@@ -23,14 +22,18 @@ passport.deserializeUser((user, done) => {
   done(null, "d");
 });
 
-export default passport.use(
-  new Strategy(strategyOptions, (accessToken, refreshToken, profile, done) => {
+passport.use(
+  new Strategy(strategyOptions, (access) => {
     console.log("init");
 
-    console.log(profile);
+    // console.log(profile);
+    // return done(null, profile.id);
   })
 );
 
-export function successfullAuthentication(req: Request, res: Response) {
-  console.log("Successfull auth");
-}
+
+export default passport;
+
+// export function successfullAuthentication(req: Request, res: Response) {
+//   console.log("Successfull auth");
+// }
