@@ -9,8 +9,14 @@ import {
 const strategyOptions: StrategyOptions = {
   clientID: process.env.GOOGLE_CLIENT_ID || "",
   clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-  callbackURL: process.env.GOOGLE_REDIRECT_URL || "",
-  scope: ["user:email"],
+  callbackURL: "/api/auth/callback/google",
+  scope: [
+    "profile",
+    "email",
+    "openid",
+    // "https://www.googleapis.com/auth/userinfo.profile",
+    // "https://www.googleapis.com/auth/userinfo.email",
+  ],
 };
 
 passport.serializeUser((user, done) => {
@@ -32,6 +38,10 @@ export default passport.use(
       let user = {};
 
       try {
+
+       console.log('google auth');
+       
+
         const currentUser = await getCurrentUserQuery();
 
         if (currentUser.rows.length === 0) {
@@ -49,12 +59,9 @@ export default passport.use(
             email: currentUser.rows[0].email,
           };
         }
-        
       } catch (err) {
         done(null, user);
       }
-
-      console.log("Hail hitler");
     }
   )
 );

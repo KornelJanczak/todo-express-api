@@ -17,11 +17,13 @@ export default (router: Router) => {
       }
     )
   );
+  router.get("/api/auth/google", passport.authenticate("google"));
   router.get(
-    "/api/auth/google",
-    passport.authenticate("google", { scope: ["profile"] })
+    "/api/auth/callback/google",
+    passport.authenticate("google"),
+    (req, res) => {
+      console.log("chuj");
+      res.send("Google OAuth Callback Url!");
+    }
   );
-  router.get("/api/auth/google/callback", passport.authenticate("google"), () => {
-    console.log("chuj");
-  });
 };
