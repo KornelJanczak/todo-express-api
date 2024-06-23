@@ -18,6 +18,7 @@ export const createUserQuery = async () =>
   });
 
 export const getUserByIdQuerty = async () =>
+  
   await dbQuery({
     queryType: "get",
     queryText: getUserByIdText,

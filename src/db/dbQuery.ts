@@ -19,34 +19,37 @@ export const dbQuery = async ({
 }: TodoQuery) => {
   console.log(id, content, priority, queryText);
 
-  try {
-    let values: any[] | null = [content, priority];
-    let result;
+  let values: any[] | null = [content, priority];
+  let result;
 
-    switch (queryType) {
-      case "create":
-        values = [content, priority];
-        break;
-      case "update":
-        values = [content, priority, id];
-        break;
-      case "delete":
-        values = [id];
-        break;
-      case "get":
-        values = [id];
-        return await db.query(queryText, values);
-      case "getAll":
-        return await db.query(queryText);
-      default:
-        throw new Error("Invalid query type");
-    }
+  console.log("db query");
 
-    result = await db.query(queryText, values);
+  switch (queryType) {
+    case "create":
+      values = [content, priority];
+      break;
+    case "update":
+      values = [content, priority, id];
+      break;
+    case "delete":
+      values = [id];
+      break;
+    case "get":
+      values = [id];
+      console.log("get db query");
 
-    return result;
-  } catch (err) {
-    console.error(err);
-    throw new Error("Error updating todo");
+      return await db.query(queryText, values);
+    case "getAll":
+      return await db.query(queryText);
+    default:
+      throw new Error("Invalid query type");
   }
+
+  console.log("after switch");
+
+  result = await db.query(queryText, values);
+
+  console.log("result");
+
+  return result;
 };

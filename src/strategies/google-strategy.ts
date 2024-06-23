@@ -38,16 +38,21 @@ export default passport.use(
       let user = {};
 
       try {
+        console.log("google auth");
 
-       console.log('google auth');
-       
-
+        
         const currentUser = await getCurrentUserQuery();
 
-        if (currentUser.rows.length === 0) {
+        console.log('abc');
+
+        
+
+        if (currentUser?.rows.length === 0) {
           await createUserQuery();
 
           const id = await getUserByIdQuerty();
+
+          if (!id) throw new Error("User with the id doesn't exist");
 
           user = {
             id: id.rows[0].id,
@@ -55,8 +60,8 @@ export default passport.use(
           };
         } else {
           user = {
-            id: currentUser.rows[0].id,
-            email: currentUser.rows[0].email,
+            id: currentUser?.rows[0].id,
+            email: currentUser?.rows[0].email,
           };
         }
       } catch (err) {
