@@ -14,6 +14,8 @@ const SESSION_EXPIRY_DATE = 60 * 60000;
 const app: Application = express();
 
 app.listen(PORT, () => {
+  
+  
   console.log("Server is running on port " + PORT);
 });
 
@@ -33,6 +35,7 @@ app.use(
     resave: false,
     cookie: {
       maxAge: SESSION_EXPIRY_DATE,
+      secure: true,
     },
   })
 );
