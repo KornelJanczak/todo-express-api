@@ -3,7 +3,7 @@ import { Strategy, type StrategyOptions } from "passport-google-oauth20";
 import {
   createUserQuery,
   getCurrentUserQuery,
-  getUserByIdQuerty,
+  getUserByIdQuery,
 } from "../db/auth";
 
 const strategyOptions: StrategyOptions = {
@@ -11,13 +11,7 @@ const strategyOptions: StrategyOptions = {
   clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
   callbackURL: "/api/auth/callback/google",
   passReqToCallback: false,
-  scope: [
-    "profile",
-    "email",
-    "openid",
-    // "https://www.googleapis.com/auth/userinfo.profile",
-    // "https://www.googleapis.com/auth/userinfo.email",
-  ],
+  scope: ["profile", "email", "openid"],
 };
 
 passport.serializeUser((user, done) => {
@@ -44,11 +38,30 @@ export default passport.use(
       console.log(account, "ACCOUNT");
 
       try {
-        const currentUser = await getCurrentUserQuery();
+        const existingUser = await getCurrentUserQuery(account.email);
 
-        console.log(currentUser, "Current user");
-      } catch (err) {
+        console.log(existingUser, "Current user");
+
+        if (existingUser.rows.length === 0) {
+          await createUserQuery(account.sub, account.email);
+
+          const newUser = await getUserByIdQuery(account.sub);
+
+          if (!newUser) throw new Error("User with the id doesn't exist");
+
+          user = {
+            id: newUser.rows[0].id,
+            email: account.email,
+          };
+        } else {
+          user = {
+            id: existingUser.rows[0].id,
+            email: existingUser.rows[0].email,
+          };
+        }
         done(null, user);
+      } catch (err) {
+        throw new Error(`${err}`);
       }
 
       // return done(null, user);
@@ -56,7 +69,7 @@ export default passport.use(
       // try {
       //   console.log("google auth");
 
-      //   const currentUser = await getCurrentUserQuery();
+      //   const existingUser = await getCurrentUserQuery();
 
       //   console.log('abc');
 
