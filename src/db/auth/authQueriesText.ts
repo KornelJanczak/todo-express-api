@@ -1,6 +1,6 @@
-export const getCurrentUserText = "SELECT * FROM users WHERE google_id=$1";
+export const getCurrentUserText = "SELECT * FROM users WHERE email=$1";
 
 export const createUserText =
-  "INSERT INTO users (username, img, google_id) VALUES ($1,$2,$3)";
+  "INSERT INTO users (id, email) VALUES ($1, $2)";
 
-export const getUserByIdText = "SELECT id FROM users WHERE google_id=$1";
+export const getUserByIdText = "SELECT * FROM users WHERE id=$1";
