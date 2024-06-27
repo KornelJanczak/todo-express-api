@@ -3,42 +3,44 @@ import { Priority } from "./../types/todo";
 import { type ApiRoutes } from "./../types";
 
 interface TodoQuery {
-  id?: string;
-  content?: string | null;
+  google_id?: string;
+  content?: string;
   priority?: Priority | null;
   queryText: string;
   queryType: ApiRoutes;
 }
 
 export const dbQuery = async ({
-  id,
+  google_id,
   content,
-  priority,
   queryText,
   queryType,
 }: TodoQuery) => {
-  console.log(id, content, priority, queryText);
+  console.log(google_id, content, queryText);
 
-  let values: any[] | null = [content, priority];
+  let values: any[] | null = [content];
   let result;
 
   console.log("db query");
 
   switch (queryType) {
     case "create":
-      values = [content, priority];
+      values = [google_id, content];
       break;
     case "update":
-      values = [content, priority, id];
+      values = [content, google_id];
       break;
     case "delete":
-      values = [id];
+      values = [google_id];
       break;
     case "get":
-      values = [id];
-      console.log("get db query");
+      values = [google_id || content];
 
-      return await db.query(queryText, values);
+      const result = await db.query(queryText, values);
+
+      console.log(result, "Result");
+
+      return result;
     case "getAll":
       return await db.query(queryText);
     default:
