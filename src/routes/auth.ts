@@ -17,27 +17,31 @@ export default (router: Router) => {
   //     }
   //   )
   // );
-  router.get(
-    "/api/auth/google",
-    passport.authenticate("google"),
-    (req: Request, res: Response) => res.status(200)
-  );``
+  router.get("/api/auth/google", passport.authenticate("google"));
+
   router.get(
     "/api/auth/callback/google",
     passport.authenticate("google"),
-    (req: Request, res: Response) => res.status(200)
+    (req: Request, res: Response) =>
+      res.status(200).send({ message: "Finish!" })
   );
+
+  router.get("/api/auth/status", (req: Request, res: Response) => {
+    console.log(req.user, "STATUS USER");
+
+    return req.user ? res.send(req.user) : res.sendStatus(401);
+  });
 
   router.get(
     "/api/auth/logout",
     (req: Request, res: Response, next: NextFunction) => {
       req.logout((err) => {
+        console.log("chuj");
+
         if (err) return next(err);
 
-        res.redirect("/");
+        res.send(200);
       });
-      // req.session.destroy();
-      res.send("Goodbye!");
     }
   );
 };
