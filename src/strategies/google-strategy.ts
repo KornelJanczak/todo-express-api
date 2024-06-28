@@ -5,6 +5,7 @@ import {
   getCurrentUserQuery,
   getUserByIdQuery,
 } from "../db/auth";
+import { User } from "@clerk/clerk-sdk-node";
 
 const strategyOptions: StrategyOptions = {
   clientID: process.env.GOOGLE_CLIENT_ID || "",
@@ -19,10 +20,24 @@ passport.serializeUser((user, done) => {
 
   done(null, user);
 });
-passport.deserializeUser((id, done) => {
-  console.log(id, "deserialize user id");
+passport.deserializeUser(async (user: User, done) => {
+  console.log(user.id, "deserialize user id");
+  try {
+    const findUser = await getUserByIdQuery(user.id);
 
-  done("Logged", null);
+    console.log(findUser, "Find user");
+
+    if (!findUser) done(null, null);
+
+    const currentUser = {
+      id: findUser.rows[0],
+      email: findUser.rows[1],
+    };
+
+    done(null, currentUser);
+  } catch (err) {
+    done(err, null);
+  }
 });
 
 export default passport.use(
@@ -32,9 +47,6 @@ export default passport.use(
       const account = profile._json;
       let user = {};
 
-      // console.log(accessToken, "TOKEN");
-      // console.log(refreshToken, "REFRESH TOKEN");
-      // console.log(profile, "PROFILE");
       console.log(account, "ACCOUNT");
 
       try {
@@ -63,36 +75,6 @@ export default passport.use(
       } catch (err) {
         throw new Error(`${err}`);
       }
-
-      // return done(null, user);
-
-      // try {
-      //   console.log("google auth");
-
-      //   const existingUser = await getCurrentUserQuery();
-
-      //   console.log('abc');
-
-      //   if (currentUser?.rows.length === 0) {
-      //     await createUserQuery();
-
-      //     const id = await getUserByIdQuerty();
-
-      //     if (!id) throw new Error("User with the id doesn't exist");
-
-      //     user = {
-      //       id: id.rows[0].id,
-      //       email: account.email,
-      //     };
-      //   } else {
-      //     user = {
-      //       id: currentUser?.rows[0].id,
-      //       email: currentUser?.rows[0].email,
-      //     };
-      //   }
-      // } catch (err) {
-      //   done(null, user);
-      // }
     }
   )
 );
