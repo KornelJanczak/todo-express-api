@@ -1,4 +1,4 @@
-import { Priority } from "../../types/todo";
+import { Priority } from "../../models/todo";
 import { todoQuery } from "./todoQuery";
 import {
   createTodoText,

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { validationResult, matchedData } from "express-validator";
-import { Todo } from "../types/todo";
+import { Todo } from "../models/todo";
 
 export const validationTodo = (
   req: Request,

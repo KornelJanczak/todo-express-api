@@ -1,6 +1,6 @@
 import { db } from "..";
-import { Priority } from "../../types/todo";
-import { type ApiRoutes } from "../../types";
+import { Priority } from "../../models/todo";
+import { type ApiRoutes } from "../../models";
 
 interface TodoQuery {
   id?: string;
