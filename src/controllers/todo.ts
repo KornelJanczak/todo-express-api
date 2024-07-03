@@ -3,8 +3,7 @@ import { todoRepository } from "../repositories";
 import { Todo } from "../models/todo";
 
 export const getTodo = async (req: Request, res: Response) => {
-  console.log(req.user);
-
+  console.log(req.user, "get todo user");
   const todo = await todoRepository.findById(req.params.id);
   return res.status(200).send({ todo });
 };

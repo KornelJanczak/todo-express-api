@@ -8,6 +8,9 @@ export class TodoRepository extends CoreRepository<Todo> {
   }
 
   protected mapToModel(row: any): Todo {
+    console.log('todo eow', row);
+    
+    
     return {
       id: row.id,
       content: row.content,

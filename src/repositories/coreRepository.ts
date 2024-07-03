@@ -75,7 +75,11 @@ export abstract class CoreRepository<T, IdType = string> {
     value: T[K]
   ): Promise<T | null> {
     const query = `SELECT * FROM ${this.tableName} WHERE ${String(field)} = $1`;
+
+    console.log(this.tableName, "table name");
+
     const result = await this.pool.query(query, [value]);
+    console.log(result.rows[0], "results");
     return this.mapToModel(result.rows[0]) || null;
   }
 
