@@ -8,24 +8,26 @@ export class UserRepository extends CoreRepository<User> {
   }
 
   //
-  public async createUser({ id, email }: CreateUserDto): Promise<User> {
+  public async createUser({ id, email }: CreateUserDto): Promise<User | {}> {
     const query = "INSERT INTO users (id, email) VALUES ($1, $2)";
     const result = await this.pool.query(query, [id, email]);
     return this.mapToModel(result.rows[0]);
   }
 
   //
-  public async findByEmail(email?: string | undefined): Promise<User | null> {
+  public async findByEmail(email?: string | undefined): Promise<User | {}> {
     return this.findOne("email", email);
   }
 
   //
-  public async findById(id: string): Promise<User | null> {
+  public async findById(id: string): Promise<User | {}> {
     return this.findOne("id", id);
   }
 
   //
-  protected mapToModel(row: any): User {
+  protected mapToModel(row: any): User | {} {
+    if (!row) return {};
+
     return {
       id: row.id,
       email: row.email,
