@@ -7,7 +7,7 @@ export abstract class CoreRepository<T, IdType = string> {
     protected id: keyof T = "id" as keyof T
   ) {}
 
-  public async create(data: Partial<T>): Promise<T> {
+  public async create(data: Partial<T>): Promise<T | {}> {
     const fields = Object.keys(data);
     const values = Object.values(data);
     const placeholders = fields.map((_, index) => `$${index + 1}`).join(", ");
@@ -20,7 +20,7 @@ export abstract class CoreRepository<T, IdType = string> {
     return this.mapToModel(result.rows[0]);
   }
 
-  public async update(id: IdType, data: Partial<T>): Promise<T | null> {
+  public async update(id: IdType, data: Partial<T>): Promise<T | {}> {
     const fields = Object.keys(data);
     const values = Object.values(data);
     const setClause = fields
@@ -35,10 +35,6 @@ export abstract class CoreRepository<T, IdType = string> {
     `;
 
     const result = await this.pool.query(query, [...values, id]);
-
-    if (result.rows.length === 0) {
-      return null;
-    }
 
     return this.mapToModel(result.rows[0]);
   }
@@ -63,25 +59,27 @@ export abstract class CoreRepository<T, IdType = string> {
   public async findAll() {
     const query = `SELECT * FROM ${this.tableName}`;
     const result = await this.pool.query(query);
-    return this.mapToModel(result.rows[0]);
+    const mappedData: (T | {})[] = result.rows.map((row) =>
+      this.mapToModel(row)
+    );
+    return mappedData;
   }
 
-  public async findById(id: IdType): Promise<T | null> {
+  public async findById(id: IdType): Promise<T | {}> {
     return this.findOne(this.id, id as T[keyof T]);
   }
 
   protected async findOne<K extends keyof T>(
     field: K,
     value: T[K]
-  ): Promise<T | null> {
+  ): Promise<T | {}> {
     const query = `SELECT * FROM ${this.tableName} WHERE ${String(field)} = $1`;
 
     console.log(this.tableName, "table name");
 
     const result = await this.pool.query(query, [value]);
-    console.log(result.rows[0], "results");
-    return this.mapToModel(result.rows[0]) || null;
+    return this.mapToModel(result.rows[0]);
   }
 
-  protected abstract mapToModel(row: any): T;
+  protected abstract mapToModel(row: any): T | {};
 }
