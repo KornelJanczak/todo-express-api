@@ -36,7 +36,7 @@ passport.deserializeUser(async (user: User, done) => {
 export default passport.use(
   new Strategy(strategyOptions, async (_, __, profile, done) => {
     const account = profile._json;
-    let user: User | null = null;
+    let user: User | {} = {};
 
     console.log(account, "ACCOUNT");
 
