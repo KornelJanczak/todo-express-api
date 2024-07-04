@@ -7,10 +7,11 @@ export class TodoRepository extends CoreRepository<Todo> {
     super(pool, "todos");
   }
 
-  protected mapToModel(row: any): Todo {
-    console.log('todo eow', row);
-    
-    
+  protected mapToModel(row: any): Todo | {} {
+    console.log("todo eow", row);
+
+    if (!row) return {};
+
     return {
       id: row.id,
       content: row.content,
