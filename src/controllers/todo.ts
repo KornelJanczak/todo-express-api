@@ -53,7 +53,6 @@ export const updateTodo = async (req: Request, res: Response) => {
 
 export const deleteTodo = async (req: Request, res: Response) => {
   if (!req.todo?.id) return res.sendStatus(400);
-
   const result = await todoRepository.delete(req.todo?.id);
   return res.status(200).send({ result });
 };
