@@ -14,6 +14,8 @@ export const getTodos = async (_: Request, res: Response) => {
 };
 
 export const createTodo = async (req: Request, res: Response) => {
+  console.log("Create Todo request!!");
+
   console.log("user", req.user);
 
   if (!req.user) return res.send({ error: "This user doesn't exist!" });
