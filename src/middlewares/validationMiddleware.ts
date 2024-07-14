@@ -7,6 +7,8 @@ export const validationTodo = (
   res: Response,
   next: NextFunction
 ) => {
+  console.log('chuj');
+  
   const validateResult = validationResult(req);
 
   if (!validateResult.isEmpty())
