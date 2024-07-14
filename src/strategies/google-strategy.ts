@@ -2,13 +2,22 @@ import passport from "passport";
 import { Strategy, type StrategyOptions } from "passport-google-oauth20";
 import { User } from "../models/user";
 import { userRepository } from "../repositories";
+import jwt from "jsonwebtoken";
+import { isUser } from "../utils/helpers";
+
+const JWT_SECRET = process.env.JWT_SECRET || "";
 
 const strategyOptions: StrategyOptions = {
   clientID: process.env.GOOGLE_CLIENT_ID || "",
   clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
   callbackURL: "/api/auth/callback/google",
   passReqToCallback: false,
-  scope: ["profile", "email", "openid"],
+  scope: [
+    "profile",
+    "email",
+    "openid",
+    "https://www.googleapis.com/auth/cloud-platform",
+  ],
 };
 
 passport.serializeUser((user, done) => {
@@ -25,7 +34,7 @@ passport.deserializeUser(async (user: User, done) => {
 
     console.log(findUser, "Find user");
 
-    if (!findUser) done(null, null);
+    if (!findUser) done(null, false);
 
     done(null, findUser);
   } catch (err) {
@@ -34,32 +43,56 @@ passport.deserializeUser(async (user: User, done) => {
 });
 
 export default passport.use(
-  new Strategy(strategyOptions, async (_, __, profile, done) => {
+  new Strategy(strategyOptions, async (accessToken, __, profile, done) => {
     const account = profile._json;
-    let user: User | {} = {};
+    let user;
+
+    console.log(accessToken, "ACCESS TOKEN");
 
     console.log(account, "ACCOUNT");
 
     try {
-      const existingUser = await userRepository.findByEmail(account.email);
+      // const existingUser = await userRepository.findByEmail(account.email);
 
-      console.log(existingUser, "Current user");
+      // console.log(existingUser, "Current user");
 
-      if (!existingUser) {
+      // if (!existingUser) {
+      //   await userRepository.create({
+      //     id: account.sub,
+      //     email: account.email,
+      //   });
+
+      //   const newUser = await userRepository.findById(account.sub);
+
+      //   if (!newUser) throw new Error("User with the id doesn't exist");
+
+      //   user = newUser;
+      // } else {
+      //   user = existingUser;
+      // }
+      // done(null, user);
+
+      const account = profile._json;
+      console.log(account, "ACCOUNT");
+
+      user = await userRepository.findByEmail(account.email);
+
+      if (!user) {
         await userRepository.create({
           id: account.sub,
           email: account.email,
         });
 
-        const newUser = await userRepository.findById(account.sub);
+        user = await userRepository.findById(account.sub);
 
-        if (!newUser) throw new Error("User with the id doesn't exist");
-
-        user = newUser;
-      } else {
-        user = existingUser;
+        if (!user) throw new Error("User with the id doesn't exist");
       }
-      done(null, user);
+
+      if (!isUser(user)) throw new Error("Invalid user object");
+
+      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
+
+      return done(null, { user, token });
     } catch (err) {
       throw new Error(`${err}`);
     }
