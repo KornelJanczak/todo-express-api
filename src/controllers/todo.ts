@@ -9,6 +9,8 @@ export const getTodo = async (req: Request, res: Response) => {
 };
 
 export const getTodos = async (_: Request, res: Response) => {
+  console.log("get todos");
+
   const todos = await todoRepository.findAll();
   return res.status(200).send({ todos });
 };
