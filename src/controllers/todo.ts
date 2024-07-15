@@ -1,35 +1,33 @@
 import { Request, Response } from "express";
 import { todoRepository } from "../repositories";
 import { Todo } from "../models/todo";
+import uuid4 from "uuid4";
 
 export const getTodo = async (req: Request, res: Response) => {
-  console.log(req.user, "get todo user");
   const todo = await todoRepository.findById(req.params.id);
   return res.status(200).send({ todo });
 };
 
 export const getTodos = async (_: Request, res: Response) => {
-  console.log("get todos");
-
   const todos = await todoRepository.findAll();
   return res.status(200).send({ todos });
 };
 
 export const createTodo = async (req: Request, res: Response) => {
+  console.log("------------------------");
   console.log("Create Todo request!!");
-
-  console.log("user", req.user);
+  console.log("------------------------");
 
   if (!req.user) return res.send({ error: "This user doesn't exist!" });
 
   const userId = req.user.id;
-
   const { todo } = req;
-  if (!todo?.content || !todo.priority || !todo.id || !userId)
-    return res.sendStatus(400);
+
+  if (!todo?.content || !todo.priority || !userId)
+    return res.status(400).send({ error: "Bad todo credentials!" });
 
   const newTodo: Todo = {
-    id: todo.id,
+    id: `${uuid4()}`,
     content: todo.content,
     priority: todo.priority,
     user_id: userId,
