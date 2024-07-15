@@ -39,3 +39,13 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 app.use("/", routes());
+
+app.get("/api/debug-session", (req, res) => {
+  console.log(req.user);
+  console.log(req.session);
+
+  res.json({
+    session: req.session,
+    user: req.user,
+  });
+});
