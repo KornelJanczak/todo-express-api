@@ -13,19 +13,10 @@ import { authMiddleware } from "../middlewares/authMiddleware";
 
 export default (router: Router) => {
   router.use(authMiddleware);
-  router.get(
-    "/api/todo",
-    (req, res, next) => {
-      console.log("Google auth route hit");
-      next();
-    },
-    authMiddleware,
-    getTodos
-  );
+  router.get("/api/todo", getTodos);
   router.get("/api/todo/:id", getTodo);
   router.post(
     "/api/todo",
-    authMiddleware,
     checkSchema(createTodoSchema),
     validationTodo,
     createTodo
