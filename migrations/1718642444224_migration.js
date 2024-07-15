@@ -15,7 +15,7 @@ exports.up = (pgm) => {
   });
 
   pgm.createTable("todos", {
-    id: { type: "id", primaryKey: true },
+    id: { type: "text", primaryKey: true },
     content: { type: "text", notNull: true },
     priority: { type: "text" },
     user_id: {
