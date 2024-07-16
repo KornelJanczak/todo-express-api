@@ -2,21 +2,22 @@ import { Request, Response } from "express";
 import { todoRepository } from "../repositories";
 import { Todo } from "../models/todo";
 import uuid4 from "uuid4";
+import { initialLog } from "../utils/helpers";
 
 export const getTodo = async (req: Request, res: Response) => {
+  initialLog("Get one todo!!!");
   const todo = await todoRepository.findById(req.params.id);
   return res.status(200).send({ todo });
 };
 
 export const getTodos = async (_: Request, res: Response) => {
+  initialLog("Get todos!!!");
   const todos = await todoRepository.findAll();
   return res.status(200).send({ todos });
 };
 
 export const createTodo = async (req: Request, res: Response) => {
-  console.log("------------------------");
-  console.log("Create Todo request!!");
-  console.log("------------------------");
+  initialLog("Create todo!!!");
 
   if (!req.user) return res.send({ error: "This user doesn't exist!" });
 
@@ -38,6 +39,7 @@ export const createTodo = async (req: Request, res: Response) => {
 };
 
 export const updateTodo = async (req: Request, res: Response) => {
+  initialLog("Update todo!!!");
   const { todo } = req;
   if (!todo) return res.send({ message: "There is no todo" }).status(400);
 
@@ -54,6 +56,7 @@ export const updateTodo = async (req: Request, res: Response) => {
 };
 
 export const deleteTodo = async (req: Request, res: Response) => {
+  initialLog("Delete todo!!!");
   if (!req.todo?.id) return res.sendStatus(400);
   const result = await todoRepository.delete(req.todo?.id);
   return res.status(200).send({ result });
