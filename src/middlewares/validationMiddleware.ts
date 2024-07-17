@@ -1,14 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import { validationResult, matchedData } from "express-validator";
 import { Todo } from "../models/todo";
+import { initialLog } from "../utils/helpers";
 
 export const validationTodo = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  console.log('chuj');
-  
+  initialLog("Validation todo middleware executed");
+
   const validateResult = validationResult(req);
 
   if (!validateResult.isEmpty())
@@ -16,11 +17,15 @@ export const validationTodo = (
 
   const data: Partial<Todo> = matchedData(req);
 
+  console.log("DATA:", data);
+
   const result: Partial<Todo> = {
     id: req.params.id,
     content: data.content,
     priority: data.priority,
   };
+
+  console.log("RESULT:", result);
 
   req.todo = result;
   next();
