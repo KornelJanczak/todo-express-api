@@ -19,7 +19,7 @@ export const createTodoSchema = {
 };
 
 export const updateTodoSchema = {
-  ...todoSchema,
+  // ...todoSchema,
   content: {
     optional: true,
     ...todoSchema.content,
