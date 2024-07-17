@@ -23,8 +23,11 @@ export abstract class CoreRepository<T, IdType = string> {
   public async update(id: IdType, data: Partial<T>): Promise<T | {}> {
     const fields = Object.keys(data);
     const values = Object.values(data);
+
+    if (fields.length === 0) return {};
+
     const setClause = fields
-      .map((field, index) => `${field} = $${index + 1}`)
+      .map((field, index) => `"${field}" = COALESCE($${index + 1}, "${field}")`)
       .join(", ");
 
     const query = `
@@ -35,6 +38,9 @@ export abstract class CoreRepository<T, IdType = string> {
     `;
 
     const result = await this.pool.query(query, [...values, id]);
+
+    if (result.rows.length === 0)
+      throw new Error(`No record found with id ${id}`);
 
     return this.mapToModel(result.rows[0]);
   }
