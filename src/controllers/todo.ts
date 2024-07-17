@@ -41,9 +41,12 @@ export const createTodo = async (req: Request, res: Response) => {
 export const updateTodo = async (req: Request, res: Response) => {
   initialLog("Update todo!!!");
   const { todo } = req;
+
   if (!todo) return res.send({ message: "There is no todo" }).status(400);
 
-  if (!todo.content || !todo.priority || !todo.id)
+  if (!todo.id) return res.send({ message: "Todo id is required" }).status(400);
+
+  if (!todo.content && !todo.priority)
     return res.send({ message: "Bad todo credentials" }).status(400);
 
   const updatedTodo = {
@@ -57,7 +60,8 @@ export const updateTodo = async (req: Request, res: Response) => {
 
 export const deleteTodo = async (req: Request, res: Response) => {
   initialLog("Delete todo!!!");
-  if (!req.todo?.id) return res.sendStatus(400);
-  const result = await todoRepository.delete(req.todo?.id);
-  return res.status(200).send({ result });
+  const todoID: string = req.params.id;
+  if (!todoID) return res.sendStatus(400);
+  const result = await todoRepository.delete(todoID);
+  return res.status(200).send({ deleted: result });
 };
