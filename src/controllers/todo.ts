@@ -7,6 +7,7 @@ import { initialLog } from "../utils/helpers";
 export const getTodo = async (req: Request, res: Response) => {
   initialLog("Get one todo!!!");
   const todo = await todoRepository.findById(req.params.id);
+  if (!todo) return res.status(404).send({ error: "Todo not found!" });
   return res.status(200).send({ todo });
 };
 
