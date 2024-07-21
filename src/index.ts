@@ -6,6 +6,7 @@ import session from "express-session";
 import "./strategies/google-strategy";
 import cookieParser from "cookie-parser";
 import cookieSession from "cookie-session";
+import { errorHandler } from "./middlewares/errorHandler";
 
 const PORT = process.env.PORT || 3000;
 const SESSION_EXPIRY_DATE = 60 * 60000;
@@ -49,3 +50,6 @@ app.get("/api/debug-session", (req, res) => {
     user: req.user,
   });
 });
+
+app.use(errorHandler);
+export default app;
