@@ -1,4 +1,6 @@
 import { Pool, QueryResult } from "pg";
+import { getErrorMessage } from "../utils/helpers";
+import { AppError } from "../errors/appError";
 
 export abstract class CoreRepository<T, IdType = string> {
   constructor(
@@ -7,7 +9,7 @@ export abstract class CoreRepository<T, IdType = string> {
     protected id: keyof T = "id" as keyof T
   ) {}
 
-  public async create(data: Partial<T>): Promise<T | {}> {
+  public async create(data: Partial<T>): Promise<T> {
     const fields = Object.keys(data);
     const values = Object.values(data);
     const placeholders = fields.map((_, index) => `$${index + 1}`).join(", ");
@@ -16,15 +18,17 @@ export abstract class CoreRepository<T, IdType = string> {
       ", "
     )}) VALUES (${placeholders}) RETURNING *`;
 
-    const result = await this.pool.query(query, values);
-    return this.mapToModel(result.rows[0]);
+    try {
+      const result = await this.pool.query(query, values);
+      return this.mapToModel(result.rows[0]);
+    } catch (error) {
+      throw new AppError("Error creating record", 500);
+    }
   }
 
-  public async update(id: IdType, data: Partial<T>): Promise<T | {}> {
+  public async update(id: IdType, data: Partial<T>): Promise<T> {
     const fields = Object.keys(data);
     const values = Object.values(data);
-
-    if (fields.length === 0) return {};
 
     const setClause = fields
       .map((field, index) => `"${field}" = COALESCE($${index + 1}, "${field}")`)
@@ -37,12 +41,16 @@ export abstract class CoreRepository<T, IdType = string> {
       RETURNING *
     `;
 
-    const result = await this.pool.query(query, [...values, id]);
+    try {
+      const result = await this.pool.query(query, [...values, id]);
 
-    if (result.rows.length === 0)
-      throw new Error(`No record found with id ${id}`);
+      if (result.rows.length === 0)
+        throw new AppError(`No record found with id ${id}`, 404);
 
-    return this.mapToModel(result.rows[0]);
+      return this.mapToModel(result.rows[0]);
+    } catch (error) {
+      throw new AppError("Error updating record", 500);
+    }
   }
 
   public async delete(id: IdType): Promise<boolean> {
@@ -57,18 +65,18 @@ export abstract class CoreRepository<T, IdType = string> {
 
       return result.rowCount !== null && result.rowCount > 0;
     } catch (error) {
-      console.error("Error deleting record:", error);
-      return false;
+      throw new AppError("Error deleting record", 500);
     }
   }
 
   public async findAll() {
     const query = `SELECT * FROM ${this.tableName}`;
-    const result = await this.pool.query(query);
-    const mappedData: (T | {})[] = result.rows.map((row) =>
-      this.mapToModel(row)
-    );
-    return mappedData;
+    try {
+      const result = await this.pool.query(query);
+      return result.rows.map((row) => this.mapToModel(row));
+    } catch (error) {
+      throw new AppError("Error fetching records", 500);
+    }
   }
 
   public async findById(id: IdType): Promise<T | null> {
@@ -81,11 +89,13 @@ export abstract class CoreRepository<T, IdType = string> {
   ): Promise<T | null> {
     const query = `SELECT * FROM ${this.tableName} WHERE ${String(field)} = $1`;
 
-    console.log(this.tableName, "table name");
-
-    const result = await this.pool.query(query, [value]);
-    if (result.rows.length === 0) return null;
-    return this.mapToModel(result.rows[0]);
+    try {
+      const result = await this.pool.query(query, [value]);
+      if (result.rows.length === 0) return null;
+      return this.mapToModel(result.rows[0]);
+    } catch (error) {
+      throw new AppError("Error fetching record", 500);
+    }
   }
 
   protected abstract mapToModel(row: any): T;
