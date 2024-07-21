@@ -71,21 +71,22 @@ export abstract class CoreRepository<T, IdType = string> {
     return mappedData;
   }
 
-  public async findById(id: IdType): Promise<T | {}> {
+  public async findById(id: IdType): Promise<T | null> {
     return this.findOne(this.id, id as T[keyof T]);
   }
 
   protected async findOne<K extends keyof T>(
     field: K,
     value: T[K]
-  ): Promise<T | {}> {
+  ): Promise<T | null> {
     const query = `SELECT * FROM ${this.tableName} WHERE ${String(field)} = $1`;
 
     console.log(this.tableName, "table name");
 
     const result = await this.pool.query(query, [value]);
+    if (result.rows.length === 0) return null;
     return this.mapToModel(result.rows[0]);
   }
 
-  protected abstract mapToModel(row: any): T | {};
+  protected abstract mapToModel(row: any): T;
 }
