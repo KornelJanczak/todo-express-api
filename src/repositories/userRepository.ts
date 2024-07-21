@@ -15,19 +15,17 @@ export class UserRepository extends CoreRepository<User> {
   }
 
   //
-  public async findByEmail(email?: string | undefined): Promise<User | {}> {
+  public async findByEmail(email?: string | undefined): Promise<User | null> {
     return this.findOne("email", email);
   }
 
   //
-  public async findById(id: string): Promise<User | {}> {
+  public async findById(id: string): Promise<User | null> {
     return this.findOne("id", id);
   }
 
   //
-  protected mapToModel(row: any): User | {} {
-    if (!row) return {};
-
+  protected mapToModel(row: any): User {
     return {
       id: row.id,
       email: row.email,
