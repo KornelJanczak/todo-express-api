@@ -1,18 +1,32 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { todoRepository } from "../repositories";
 import { Todo } from "../models/todo";
 import uuid4 from "uuid4";
 import { initialLog } from "../utils/helpers";
+import { AppError } from "../errors/appError";
 
-export const getTodo = async (req: Request, res: Response) => {
-  initialLog("Get one todo!!!");
-  const todo = await todoRepository.findById(req.params.id);
-  if (!todo) return res.status(404).send({ error: "Todo not found!" });
-  return res.status(200).send({ todo });
+export const getTodo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    initialLog("Get Todo executed");
+    const todo = await todoRepository.findById(req.params.id);
+
+    if (!todo) {
+      res.statusCode = 404;
+      throw new AppError("Todo not found!", 404);
+    }
+
+    return res.status(200).send({ todo });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const getTodos = async (_: Request, res: Response) => {
-  initialLog("Get todos!!!");
+  initialLog("Get todos executed");
   const todos = await todoRepository.findAll();
   return res.status(200).send({ todos });
 };
