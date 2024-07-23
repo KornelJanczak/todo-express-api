@@ -14,10 +14,7 @@ export const getTodo = async (
     initialLog("Get Todo executed");
     const todo = await todoRepository.findById(req.params.id);
 
-    if (!todo) {
-      res.statusCode = 404;
-      throw new AppError("Todo not found!", 404);
-    }
+    if (!todo) throw new AppError("Todo not found!", 404);
 
     return res.status(200).send({ todo });
   } catch (err) {
