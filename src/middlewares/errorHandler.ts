@@ -7,11 +7,8 @@ export function errorHandler(
   res: Response,
   next: NextFunction
 ) {
-
   let statusCode = res.statusCode !== 200 ? res.statusCode : 500;
   let message;
-
-  res.status(statusCode);
 
   if (err instanceof AppError) {
     statusCode = err.statusCode;
@@ -27,5 +24,5 @@ export function errorHandler(
   };
 
   console.error("Error:", responseBody);
-  res.json(responseBody);
+  return res.status(statusCode).json(responseBody);
 }
