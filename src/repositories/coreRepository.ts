@@ -89,13 +89,15 @@ export abstract class CoreRepository<T, IdType = string> {
   ): Promise<T | null> {
     const query = `SELECT * FROM ${this.tableName} WHERE ${String(field)} = $1`;
 
-    try {
-      const result = await this.pool.query(query, [value]);
-      if (result.rows.length === 0) return null;
-      return this.mapToModel(result.rows[0]);
-    } catch (error) {
-      throw new AppError("Error fetching record", 500);
-    }
+    // try {
+    const result = await this.pool.query(query, [value]);
+    console.log(result);
+
+    if (result.rows.length === 0) return null;
+    return this.mapToModel(result.rows[0]);
+    // } catch (error) {
+    //   throw new AppError("Error fetching record", 500);
+    // }
   }
 
   protected abstract mapToModel(row: any): T;
