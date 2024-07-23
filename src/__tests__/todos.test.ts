@@ -4,7 +4,7 @@ import { mockNext, mockRequest, mockResponse } from "../__mocks__";
 import uuid4 from "uuid4";
 import { todoRepository } from "../repositories";
 import { Priority, Todo } from "../models/todo";
-import { Request } from "express";
+import { AppError } from "../errors/appError";
 
 const mockTodo = {
   id: uuid4(),
@@ -55,22 +55,17 @@ describe("get todo", () => {
     expect(mockResponse.send).toHaveBeenCalledWith({ todo: mockTodo });
   });
 
-  // it("mockResolvedValue returns null", async () => {
-  //   const result = await todoRepository.findById("nonexistent-id");
-  //   expect(result).toBeNull();
-  // });
-
-  it("should return status 404 when todo is not found", async () => {
+  it("should call next with AppError when todo is not found", async () => {
     jest.spyOn(todoRepository, "findById").mockResolvedValue(null);
 
-    await getTodo({} as Request, mockResponse, mockNext);
+    await getTodo(mockRequest, mockResponse, mockNext);
 
-    expect(mockResponse.status).toHaveBeenCalledWith(404);
-    //   expect(mockResponse.send).toHaveBeenCalledWith({
-    //     statusCode: 404,
-    //     message: "Todo not found!",
-    //     stack: "Todo not found!",
-    //   });
-    // });
+    expect(mockNext).toHaveBeenCalledWith(expect.any(AppError));
+    expect(mockNext).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Todo not found!",
+        statusCode: 404,
+      })
+    );
   });
 });
