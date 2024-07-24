@@ -1,6 +1,6 @@
 import { describe, it, test, beforeAll, beforeEach } from "@jest/globals";
 import { getTodos, getTodo } from "../controllers/todo";
-import { mockNext, mockRequest, mockResponse } from "../__mocks__";
+import { mockNext, mockRequest, mockResponse, mockPool } from "../__mocks__";
 import uuid4 from "uuid4";
 import { todoRepository } from "../repositories";
 import { Priority, Todo } from "../models/todo";
@@ -19,7 +19,7 @@ describe("get todos", () => {
 
     jest.spyOn(todoRepository, "findAll").mockResolvedValue(todos);
 
-    await getTodos(mockRequest, mockResponse);
+    await getTodos(mockRequest, mockResponse, mockNext);
 
     expect(mockResponse.status).toHaveBeenCalledWith(200);
     expect(mockResponse.send).toHaveBeenCalledWith({ todos });
@@ -30,7 +30,7 @@ describe("get todos", () => {
 
     jest.spyOn(todoRepository, "findAll").mockResolvedValue(todos);
 
-    await getTodos(mockRequest, mockResponse);
+    await getTodos(mockRequest, mockResponse, mockNext);
 
     expect(mockResponse.status).toHaveBeenCalledWith(200);
     expect(mockResponse.send).toHaveBeenCalledWith({ todos });
@@ -53,6 +53,7 @@ describe("get todo", () => {
 
     expect(mockResponse.status).toHaveBeenCalledWith(200);
     expect(mockResponse.send).toHaveBeenCalledWith({ todo: mockTodo });
+    expect(mockResponse.send).toHaveBeenCalledTimes(1);
   });
 
   it("should call next with AppError when todo is not found", async () => {
@@ -67,5 +68,17 @@ describe("get todo", () => {
         statusCode: 404,
       })
     );
+    expect(mockResponse.send).not.toHaveBeenCalled();
   });
+
+  // it("should throw an error when connection to the database fails", async () => {
+  //   mockPool.query.mockRejectedValue(
+  //     new AppError("Error fetching record", 500)
+  //   );
+
+  //   // Act & Assert
+  //   await expect(todoRepository.findById("example-id")).rejects.toThrow(
+  //     new AppError("Error fetching record", 500)
+  //   );
+  // });
 });
