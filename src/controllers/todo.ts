@@ -13,16 +13,18 @@ export const getTodo = async (
   try {
     initialLog("Get Todo executed");
     const todo = await todoRepository.findById(req.params.id);
-
     if (!todo) throw new AppError("Todo not found!", 404);
-
     return res.status(200).send({ todo });
   } catch (err) {
     next(err);
   }
 };
 
-export const getTodos = async (_: Request, res: Response) => {
+export const getTodos = async (
+  _: Request,
+  res: Response,
+  next: NextFunction
+) => {
   initialLog("Get todos executed");
   const todos = await todoRepository.findAll();
   return res.status(200).send({ todos });
