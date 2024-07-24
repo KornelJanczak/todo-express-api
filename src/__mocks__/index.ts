@@ -12,3 +12,7 @@ export const mockResponse = {
 } as unknown as Response;
 
 export const mockNext = jest.fn() as unknown as NextFunction;
+
+export const mockPool = {
+  query: jest.fn(),
+};
