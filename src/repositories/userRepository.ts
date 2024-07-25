@@ -16,12 +16,12 @@ export class UserRepository extends CoreRepository<User> {
 
   //
   public async findByEmail(email?: string | undefined): Promise<User | null> {
-    return this.findOne("email", email);
+    return this.FindOne("email", email);
   }
 
   //
   public async findById(id: string): Promise<User | null> {
-    return this.findOne("id", id);
+    return this.FindOne("id", id);
   }
 
   //
