@@ -12,8 +12,10 @@ export const getTodo = async (
 ) => {
   try {
     initialLog("Get Todo executed");
-    const todo = await todoRepository.findById(req.params.id);
+    const todo = await todoRepository.FindById(req.params.id);
     if (!todo) throw new AppError("Todo not found!", 404);
+    console.log("Sending todo");
+
     return res.status(200).send({ todo });
   } catch (err) {
     next(err);
@@ -26,7 +28,7 @@ export const getTodos = async (
   next: NextFunction
 ) => {
   initialLog("Get todos executed");
-  const todos = await todoRepository.findAll();
+  const todos = await todoRepository.FindAll();
   return res.status(200).send({ todos });
 };
 
@@ -48,7 +50,7 @@ export const createTodo = async (req: Request, res: Response) => {
     user_id: userId,
   };
 
-  const result = await todoRepository.create(newTodo);
+  const result = await todoRepository.Create(newTodo);
   return res.status(200).send({ result });
 };
 
@@ -68,7 +70,7 @@ export const updateTodo = async (req: Request, res: Response) => {
     priority: todo.priority,
   };
 
-  const result = await todoRepository.update(todo.id, updatedTodo);
+  const result = await todoRepository.Update(todo.id, updatedTodo);
   return res.status(200).send({ result });
 };
 
@@ -76,6 +78,6 @@ export const deleteTodo = async (req: Request, res: Response) => {
   initialLog("Delete todo!!!");
   const todoID: string = req.params.id;
   if (!todoID) return res.sendStatus(400);
-  const result = await todoRepository.delete(todoID);
+  const result = await todoRepository.Delete(todoID);
   return res.status(200).send({ deleted: result });
 };
