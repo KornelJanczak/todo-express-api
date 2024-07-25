@@ -8,7 +8,7 @@ export abstract class CoreRepository<T, IdType = string> {
     protected id: keyof T = "id" as keyof T
   ) {}
 
-  public async create(data: Partial<T>): Promise<T> {
+  public async Create(data: Partial<T>): Promise<T | null> {
     const fields = Object.keys(data);
     const values = Object.values(data);
     const placeholders = fields.map((_, index) => `$${index + 1}`).join(", ");
@@ -17,15 +17,13 @@ export abstract class CoreRepository<T, IdType = string> {
       ", "
     )}) VALUES (${placeholders}) RETURNING *`;
 
-    try {
-      const result = await this.pool.query(query, values);
-      return this.mapToModel(result.rows[0]);
-    } catch (error) {
-      throw new AppError("Error creating record", 500);
-    }
+    const result = await this.FetchRecord(query, values as T[keyof T]);
+    if (!result || result.rows.length === 0) return null;
+
+    return this.MapToModel(result.rows[0]);
   }
 
-  public async update(id: IdType, data: Partial<T>): Promise<T> {
+  public async Update(id: IdType, data: Partial<T>): Promise<T |  null>   {
     const fields = Object.keys(data);
     const values = Object.values(data);
 
@@ -40,19 +38,24 @@ export abstract class CoreRepository<T, IdType = string> {
       RETURNING *
     `;
 
-    try {
-      const result = await this.pool.query(query, [...values, id]);
+    // try {
+    //   const result = await this.pool.query(query, [...values, id]);
 
-      if (result.rows.length === 0)
-        throw new AppError(`No record found with id ${id}`, 404);
+    //   if (result.rows.length === 0)
+    //     throw new AppError(`No record found with id ${id}`, 404);
 
-      return this.mapToModel(result.rows[0]);
-    } catch (error) {
-      throw new AppError("Error updating record", 500);
-    }
+    //   return this.MapToModel(result.rows[0]);
+    // } catch (error) {
+    //   throw new AppError("Error updating record", 500);
+    // }
+
+    const result = await this.FetchRecord(query, values as T[keyof T]);
+    if (!result || result.rows.length === 0) return null;
+
+    return this.MapToModel(result.rows[0]);
   }
 
-  public async delete(id: IdType): Promise<boolean> {
+  public async Delete(id: IdType): Promise<boolean> {
     const query = `
       DELETE FROM ${this.tableName}
       WHERE ${String(this.id)} = $1
@@ -68,36 +71,57 @@ export abstract class CoreRepository<T, IdType = string> {
     }
   }
 
-  public async findAll() {
+  public async FindAll() {
     const query = `SELECT * FROM ${this.tableName}`;
     try {
       const result = await this.pool.query(query);
-      return result.rows.map((row) => this.mapToModel(row));
+      return result.rows.map((row) => this.MapToModel(row));
     } catch (error) {
       throw new AppError("Error fetching records", 500);
     }
   }
 
-  public async findById(id: IdType): Promise<T | null> {
-    return this.findOne(this.id, id as T[keyof T]);
+  public async FindById(id: IdType): Promise<T | null> {
+    return this.FindOne(this.id, id as T[keyof T]);
   }
 
-  protected async findOne<K extends keyof T>(
+  protected async FindOne<K extends keyof T>(
     field: K,
     value: T[K]
   ): Promise<T | null> {
     const query = `SELECT * FROM ${this.tableName} WHERE ${String(field)} = $1`;
 
-    try {
-      const result = await this.pool.query(query, [value]);
-      console.log(result);
+    this.PoolGuard();
 
-      if (result.rows.length === 0) return null;
-      return this.mapToModel(result.rows[0]);
-    } catch (error) {
-      throw new AppError("Error fetching record", 500);
-    }
+    const result = await this.FetchRecord(query, value);
+    if (!result || result.rows.length === 0) return null;
+
+    return this.MapToModel(result.rows[0]);
   }
 
-  protected abstract mapToModel(row: any): T;
+  protected abstract MapToModel(row: any): T;
+
+  private async FetchRecord<K extends keyof T>(
+    query: string,
+    value: T[K]
+  ): Promise<QueryResult<any> | undefined> {
+    let result;
+    try {
+      result = await this.pool.query(query, [value]);
+    } catch (error: Error | unknown) {
+      if (error instanceof Error) {
+        console.error(`Error occurred: ${error.message}`);
+        throw new AppError("Error fetching record", 500, error.stack);
+      }
+    }
+    return result;
+  }
+
+  private PoolGuard(stack?: string): void {
+    if (!this.pool) throw new AppError("Database connection error", 500, stack);
+  }
+
+  private QueryGuard(result: QueryResult<any>): boolean {
+    return !result || result.rows.length === 0;
+  }
 }
