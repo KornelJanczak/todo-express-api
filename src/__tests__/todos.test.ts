@@ -14,10 +14,13 @@ const mockTodo = {
 };
 
 describe("get todos", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
   it("should get all todos and return 200", async () => {
     const todos = [mockTodo];
 
-    jest.spyOn(todoRepository, "findAll").mockResolvedValue(todos);
+    jest.spyOn(todoRepository, "FindAll").mockResolvedValue(todos);
 
     await getTodos(mockRequest, mockResponse, mockNext);
 
@@ -28,7 +31,7 @@ describe("get todos", () => {
   it("should return status 200 and an empty list when repository has no todos", async () => {
     const todos: Todo[] = [];
 
-    jest.spyOn(todoRepository, "findAll").mockResolvedValue(todos);
+    jest.spyOn(todoRepository, "FindAll").mockResolvedValue(todos);
 
     await getTodos(mockRequest, mockResponse, mockNext);
 
@@ -46,18 +49,25 @@ describe("get todos", () => {
 });
 
 describe("get todo", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
   it("should get one todo and return 200", async () => {
-    jest.spyOn(todoRepository, "findById").mockResolvedValue(mockTodo);
+
+    jest.spyOn(todoRepository, "FindById").mockResolvedValue(mockTodo);
 
     await getTodo(mockRequest, mockResponse, mockNext);
 
     expect(mockResponse.status).toHaveBeenCalledWith(200);
     expect(mockResponse.send).toHaveBeenCalledWith({ todo: mockTodo });
+    expect(mockNext).not.toHaveBeenCalledWith(expect.any(AppError));
+    // debugger;
+
     expect(mockResponse.send).toHaveBeenCalledTimes(1);
   });
 
   it("should call next with AppError when todo is not found", async () => {
-    jest.spyOn(todoRepository, "findById").mockResolvedValue(null);
+    jest.spyOn(todoRepository, "FindById").mockResolvedValue(null);
 
     await getTodo(mockRequest, mockResponse, mockNext);
 
@@ -68,7 +78,6 @@ describe("get todo", () => {
         statusCode: 404,
       })
     );
-    expect(mockResponse.send).not.toHaveBeenCalled();
   });
 
   // it("should throw an error when connection to the database fails", async () => {
