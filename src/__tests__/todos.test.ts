@@ -20,7 +20,7 @@ describe("get todos", () => {
   it("should get all todos and return 200", async () => {
     const todos = [mockTodo];
 
-    jest.spyOn(todoRepository, "FindAll").mockResolvedValue(todos);
+    jest.spyOn(todoRepository, "findAll").mockResolvedValue(todos);
 
     await getTodos(mockRequest, mockResponse, mockNext);
 
@@ -31,7 +31,7 @@ describe("get todos", () => {
   it("should return status 200 and an empty list when repository has no todos", async () => {
     const todos: Todo[] = [];
 
-    jest.spyOn(todoRepository, "FindAll").mockResolvedValue(todos);
+    jest.spyOn(todoRepository, "findAll").mockResolvedValue(todos);
 
     await getTodos(mockRequest, mockResponse, mockNext);
 
@@ -54,7 +54,7 @@ describe("get todo", () => {
   });
   it("should get one todo and return 200", async () => {
 
-    jest.spyOn(todoRepository, "FindById").mockResolvedValue(mockTodo);
+    jest.spyOn(todoRepository, "findById").mockResolvedValue(mockTodo);
 
     await getTodo(mockRequest, mockResponse, mockNext);
 
@@ -67,7 +67,7 @@ describe("get todo", () => {
   });
 
   it("should call next with AppError when todo is not found", async () => {
-    jest.spyOn(todoRepository, "FindById").mockResolvedValue(null);
+    jest.spyOn(todoRepository, "findById").mockResolvedValue(null);
 
     await getTodo(mockRequest, mockResponse, mockNext);
 
