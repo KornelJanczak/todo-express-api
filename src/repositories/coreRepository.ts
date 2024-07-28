@@ -8,22 +8,85 @@ export abstract class CoreRepository<T, IdType = string> {
     protected id: keyof T = "id" as keyof T
   ) {}
 
-  public async Create(data: Partial<T>): Promise<T | null> {
+  public async create(data: Partial<T>): Promise<T | null> {
+    const uniqueField = "email" as keyof T;
+    const uniqueValue = data[uniqueField];
+
+    if (uniqueValue) {
+      const existingRecord = await this.findByUniqueField(
+        uniqueField,
+        uniqueValue
+      );
+      if (existingRecord) {
+        throw new AppError("Record with this unique field already exists", 400);
+      }
+    }
+
+    const { query, values } = this.buildInsertQuery(data);
+    const result = await this.executeQuery(query, values);
+    return this.processResult(result);
+  }
+
+  public async update(id: IdType, data: Partial<T>): Promise<T | null> {
+    const { query, values } = this.buildUpdateQuery(id, data);
+    const result = await this.executeQuery(query, values);
+
+    return this.processResult(result);
+  }
+
+  public async delete(id: IdType): Promise<boolean | null> {
+    const query = `DELETE FROM ${this.tableName} WHERE ${String(
+      this.id
+    )} = $1 RETURNING *`;
+    const result = await this.executeQuery(query, [id]);
+    return this.processResult(result) ? true : false;
+  }
+
+  public async findAll() {
+    const query = `SELECT * FROM ${this.tableName}`;
+    const result = await this.executeQuery(query);
+    return result ? result.rows.map(this.mapToModel) : null;
+  }
+
+  public async findById(id: IdType): Promise<T | null> {
+    return this.findOne(this.id, id as T[keyof T]);
+  }
+
+  private async findByUniqueField<K extends keyof T>(
+    field: K,
+    value: T[K]
+  ): Promise<T | null> {
+    const query = `SELECT * FROM ${this.tableName} WHERE ${String(field)} = $1`;
+    const result = await this.executeQuery(query, [value]);
+    return this.processResult(result);
+  }
+
+  protected abstract mapToModel(row: any): T;
+  protected async findOne<K extends keyof T>(
+    field: K,
+    value: T[K]
+  ): Promise<T | null> {
+    const query = `SELECT * FROM ${this.tableName} WHERE ${String(field)} = $1`;
+
+    const result = await this.executeQuery(query, [value]);
+
+    return this.processResult(result);
+  }
+
+  private buildInsertQuery(data: Partial<T>): { query: string; values: any[] } {
     const fields = Object.keys(data);
     const values = Object.values(data);
     const placeholders = fields.map((_, index) => `$${index + 1}`).join(", ");
-
     const query = `INSERT INTO ${this.tableName} (${fields.join(
       ", "
     )}) VALUES (${placeholders}) RETURNING *`;
-
-    const result = await this.FetchRecord(query, values as T[keyof T]);
-    if (!result || result.rows.length === 0) return null;
-
-    return this.MapToModel(result.rows[0]);
+    return { query, values };
   }
 
-  public async Update(id: IdType, data: Partial<T>): Promise<T |  null>   {
+  private buildUpdateQuery(
+    id: IdType,
+    data: Partial<T>
+  ): { query: string; values: any[] } {
     const fields = Object.keys(data);
     const values = Object.values(data);
 
@@ -31,97 +94,41 @@ export abstract class CoreRepository<T, IdType = string> {
       .map((field, index) => `"${field}" = COALESCE($${index + 1}, "${field}")`)
       .join(", ");
 
-    const query = `
-      UPDATE ${this.tableName} 
-      SET ${setClause} 
-      WHERE ${String(this.id)} = $${fields.length + 1} 
-      RETURNING *
-    `;
+    const query = `UPDATE ${this.tableName} SET ${setClause} WHERE ${String(
+      this.id
+    )} = $${fields.length + 1} RETURNING *`;
 
-    // try {
-    //   const result = await this.pool.query(query, [...values, id]);
+    values.push(id);
 
-    //   if (result.rows.length === 0)
-    //     throw new AppError(`No record found with id ${id}`, 404);
-
-    //   return this.MapToModel(result.rows[0]);
-    // } catch (error) {
-    //   throw new AppError("Error updating record", 500);
-    // }
-
-    const result = await this.FetchRecord(query, values as T[keyof T]);
-    if (!result || result.rows.length === 0) return null;
-
-    return this.MapToModel(result.rows[0]);
+    return { query, values };
   }
 
-  public async Delete(id: IdType): Promise<boolean> {
-    const query = `
-      DELETE FROM ${this.tableName}
-      WHERE ${String(this.id)} = $1
-      RETURNING *
-    `;
-
-    try {
-      const result: QueryResult = await this.pool.query(query, [id]);
-
-      return result.rowCount !== null && result.rowCount > 0;
-    } catch (error) {
-      throw new AppError("Error deleting record", 500);
-    }
-  }
-
-  public async FindAll() {
-    const query = `SELECT * FROM ${this.tableName}`;
-    try {
-      const result = await this.pool.query(query);
-      return result.rows.map((row) => this.MapToModel(row));
-    } catch (error) {
-      throw new AppError("Error fetching records", 500);
-    }
-  }
-
-  public async FindById(id: IdType): Promise<T | null> {
-    return this.FindOne(this.id, id as T[keyof T]);
-  }
-
-  protected async FindOne<K extends keyof T>(
-    field: K,
-    value: T[K]
-  ): Promise<T | null> {
-    const query = `SELECT * FROM ${this.tableName} WHERE ${String(field)} = $1`;
-
-    this.PoolGuard();
-
-    const result = await this.FetchRecord(query, value);
-    if (!result || result.rows.length === 0) return null;
-
-    return this.MapToModel(result.rows[0]);
-  }
-
-  protected abstract MapToModel(row: any): T;
-
-  private async FetchRecord<K extends keyof T>(
+  private async executeQuery<K extends keyof T>(
     query: string,
-    value: T[K]
+    values?: (T[K] | IdType)[]
   ): Promise<QueryResult<any> | undefined> {
-    let result;
+    this.poolGuard();
     try {
-      result = await this.pool.query(query, [value]);
+      return await this.pool.query(query, values);
     } catch (error: Error | unknown) {
       if (error instanceof Error) {
-        console.error(`Error occurred: ${error.message}`);
-        throw new AppError("Error fetching record", 500, error.stack);
+        console.error(`${error.message}`);
+        throw new AppError("Error querying database", 500, error.stack);
       }
     }
-    return result;
   }
 
-  private PoolGuard(stack?: string): void {
+  private processResult(result: QueryResult<any> | undefined): T | null {
+    if (
+      !result ||
+      !result.rowCount ||
+      result.rows.length === 0 ||
+      result.rowCount < 0
+    )
+      return null;
+    return this.mapToModel(result.rows[0]);
+  }
+  private poolGuard(stack?: string): void {
     if (!this.pool) throw new AppError("Database connection error", 500, stack);
-  }
-
-  private QueryGuard(result: QueryResult<any>): boolean {
-    return !result || result.rows.length === 0;
   }
 }
