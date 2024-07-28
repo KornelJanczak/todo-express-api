@@ -2,6 +2,7 @@ import passport from "passport";
 import { Strategy, type StrategyOptions } from "passport-google-oauth20";
 import { User } from "../models/user";
 import { userRepository } from "../repositories";
+import { AppError } from "../errors/appError";
 
 const strategyOptions: StrategyOptions = {
   clientID: process.env.GOOGLE_CLIENT_ID || "",
@@ -53,17 +54,23 @@ export default passport.use(
           email: account.email,
         });
 
+        console.log(account, "account");
+
         const newUser = await userRepository.findById(account.sub);
 
-        if (!newUser) throw new Error("User with the id doesn't exist");
+        console.log(newUser, "New user");
+
+        if (!newUser) throw new AppError("User not found!", 404);
 
         user = newUser;
       } else {
         user = existingUser;
       }
+      console.log("User", user);
+
       done(null, user);
     } catch (err) {
-      throw new Error(`${err}`);
+      done(err);
     }
   })
 );
