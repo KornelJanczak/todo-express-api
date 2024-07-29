@@ -39,13 +39,35 @@ describe("get todos", () => {
     expect(mockResponse.send).toHaveBeenCalledWith({ todos });
   });
 
-  // it("should return status 500 when repository throws an error", async () => {
-  //   jest.spyOn(todoRepository, "findAll").mockRejectedValue(new Error("Error"));
+  it("should return status 404 when any todo hasn't been found", async () => {
+    jest.spyOn(todoRepository, "findAll").mockResolvedValue(null);
 
-  //   await getTodos(mockRequest, mockResponse);
+    await getTodos(mockRequest, mockResponse, mockNext);
 
-  //   expect(mockResponse.status).toHaveBeenCalledWith(500);
-  // });
+    expect(mockNext).toHaveBeenCalledWith(expect.any(AppError));
+    expect(mockNext).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "No todos found!",
+        statusCode: 404,
+      })
+    );
+    expect(mockResponse.send).toHaveBeenCalledTimes(0);
+  });
+
+  it("should call next with AppError when repository throws an error", async () => {
+    jest.spyOn(todoRepository, "findAll").mockRejectedValue(new Error("Error"));
+
+    await getTodos(mockRequest, mockResponse, mockNext);
+
+    expect(mockNext).toHaveBeenCalledWith(expect.any(AppError));
+    expect(mockNext).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Error querying database",
+        statusCode: 500,
+      })
+    );
+    expect(mockResponse.send).toHaveBeenCalledTimes
+  });
 });
 
 describe("get todo", () => {
@@ -53,7 +75,6 @@ describe("get todo", () => {
     jest.clearAllMocks();
   });
   it("should get one todo and return 200", async () => {
-
     jest.spyOn(todoRepository, "findById").mockResolvedValue(mockTodo);
 
     await getTodo(mockRequest, mockResponse, mockNext);
@@ -79,15 +100,4 @@ describe("get todo", () => {
       })
     );
   });
-
-  // it("should throw an error when connection to the database fails", async () => {
-  //   mockPool.query.mockRejectedValue(
-  //     new AppError("Error fetching record", 500)
-  //   );
-
-  //   // Act & Assert
-  //   await expect(todoRepository.findById("example-id")).rejects.toThrow(
-  //     new AppError("Error fetching record", 500)
-  //   );
-  // });
 });
