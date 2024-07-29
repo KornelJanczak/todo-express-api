@@ -28,6 +28,7 @@ export const getTodos = async (
   try {
     initialLog("Get todos executed");
     const todos = await todoRepository.findAll();
+    if (!todos) throw new AppError("No todos found!", 404);
     return res.status(200).send({ todos });
   } catch (err) {
     next(err);
@@ -57,36 +58,53 @@ export const createTodo = async (
     };
 
     const result = await todoRepository.create(newTodo);
+    if (!result) throw new AppError("Todo not created", 400);
     return res.status(200).send({ result });
   } catch (err) {
     next(err);
   }
 };
 
-export const updateTodo = async (req: Request, res: Response) => {
-  initialLog("Update todo!!!");
+export const updateTodo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  initialLog("Updating todo");
   const { todo } = req;
 
-  if (!todo) return res.send({ message: "There is no todo" }).status(400);
-
-  if (!todo.id) return res.send({ message: "Todo id is required" }).status(400);
-
+  if (!todo) throw new AppError("Todo not found!", 404);
+  if (!todo.id) throw new AppError("Todo id not found!", 400);
   if (!todo.content && !todo.priority)
-    return res.send({ message: "Bad todo credentials" }).status(400);
+    throw new AppError("Bad todo credentials", 400);
 
-  const updatedTodo = {
-    content: todo.content,
-    priority: todo.priority,
-  };
+  try {
+    const updatedTodo = {
+      content: todo.content,
+      priority: todo.priority,
+    };
 
-  const result = await todoRepository.update(todo.id, updatedTodo);
-  return res.status(200).send({ result });
+    const result = await todoRepository.update(todo.id, updatedTodo);
+    if (!result) throw new AppError("Todo not found!", 404);
+    return res.status(200).send({ result });
+  } catch (err) {
+    next(err);
+  }
 };
 
-export const deleteTodo = async (req: Request, res: Response) => {
-  initialLog("Delete todo!!!");
+export const deleteTodo = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  initialLog("Delete todo");
   const todoID: string = req.params.id;
-  if (!todoID) return res.sendStatus(400);
-  const result = await todoRepository.delete(todoID);
-  return res.status(200).send({ deleted: result });
+  if (!todoID) throw new AppError("Todo id not found!", 400);
+  try {
+    const result = await todoRepository.delete(todoID);
+    if (!result) throw new AppError("Todo not found!", 404);
+    return res.status(200).send({ deleted: result });
+  } catch (err) {
+    next(err);
+  }
 };

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { validationResult, matchedData } from "express-validator";
 import { Todo } from "../models/todo";
 import { initialLog } from "../utils/helpers";
+import { AppError } from "../errors/appError";
 
 export const validationTodo = (
   req: Request,
@@ -13,7 +14,7 @@ export const validationTodo = (
   const validateResult = validationResult(req);
 
   if (!validateResult.isEmpty())
-    return res.status(400).send({ msg: validateResult.array() });
+    throw new AppError("Validation failed", 400, validateResult.array());
 
   const data: Partial<Todo> = matchedData(req);
 

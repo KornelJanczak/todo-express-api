@@ -14,7 +14,5 @@ export const authMiddleware = (
 
   if (req.isAuthenticated()) return next();
 
-  
-  // return res.status(401).send({ error: "Unauthorized!" });
   return next(new AppError("Unauthorized!", 401));
 };
