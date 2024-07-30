@@ -73,6 +73,8 @@ export const updateTodo = async (
   initialLog("Updating todo");
   const { todo } = req;
 
+  console.log(todo);
+
   if (!todo) throw new AppError("Todo not found!", 404);
   if (!todo.id) throw new AppError("Todo id not found!", 400);
   if (!todo.content && !todo.priority)
