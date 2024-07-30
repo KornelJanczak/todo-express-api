@@ -23,8 +23,12 @@ export abstract class CoreRepository<T, IdType = string> {
     }
 
     const { query, values } = this.buildInsertQuery(data);
+    console.log("Insert query:", query, "Values:", values);
     const result = await this.executeQuery(query, values);
-    return this.processResult(result);
+    console.log("Query result:", result);
+    const processedResult = this.processResult(result);
+    console.log("Processed result:", processedResult);
+    return processedResult;
   }
 
   public async update(id: IdType, data: Partial<T>): Promise<T | null> {
