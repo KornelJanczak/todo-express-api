@@ -34,7 +34,6 @@ export abstract class CoreRepository<T, IdType = string> {
   public async update(id: IdType, data: Partial<T>): Promise<T | null> {
     const { query, values } = this.buildUpdateQuery(id, data);
     const result = await this.executeQuery(query, values);
-
     return this.processResult(result);
   }
 

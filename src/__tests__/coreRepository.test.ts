@@ -1,79 +1,149 @@
+import { Pool } from "pg";
 import { CoreRepository } from "../repositories/coreRepository";
-import { db } from "../db";
-import { todoRepository } from "../repositories";
-import { describe, it, beforeEach } from "@jest/globals";
+import { AppError } from "../errors/appError";
 
-import { Pool, QueryResult } from "pg";
-import { mockPool } from "../__mocks__";
-class TestRepository extends CoreRepository<any> {
-  constructor() {
-    super(mockPool, "test");
-  }
+import { User } from "../models/user";
+import { mockUser } from "../__mocks__";
 
-  public async publicFindByUniqueField(
-    field: string,
-    value: any
-  ): Promise<any> {
-    return this["findByUniqueField"](field, value);
-  }
-
-  public async publicBuildInsertQuery(
-    data: any
-  ): Promise<{ query: string; values: any[] }> {
-    return Promise.resolve(this["buildInsertQuery"](data));
-  }
-
-  public async publicExecuteQuery(query: string, values?: any[]): Promise<any> {
-    return this["executeQuery"](query, values);
-  }
-
-  public async publicProcessResult(result: QueryResult<any>): Promise<any> {
-    return Promise.resolve(this["processResult"](result));
-  }
-
-  protected mapToModel(row: any): any {
-    return row;
+class UserRepository extends CoreRepository<User> {
+  protected mapToModel(row: any): User {
+    return {
+      id: row.id,
+      email: row.email,
+      todos: row.todos,
+    };
   }
 }
 
 describe("CoreRepository", () => {
-  let repository: TestRepository;
+  let pool: jest.Mocked<Pool>;
+  let repository: UserRepository;
 
   beforeEach(() => {
-    repository = new TestRepository();
+    pool = {
+      query: jest.fn(),
+    } as unknown as jest.Mocked<Pool>;
+
+    repository = new UserRepository(pool, "users");
   });
 
-  //   it("should create a new record", async () => {
-  //     jest.spyOn(repository, "publicExecuteQuery").mockResolvedValue({
-  //       rows: [{ id: 1, email: "test@example.com" }],
-  //       rowCount: 1,
-  //     });
+  describe("create", () => {
+    it("should create a new record", async () => {
+      const userData: Partial<User> = {
+        email: "test@example.com",
+      };
+      const mockResult = {
+        rows: [{ id: "1", email: "test@example.com", name: "Test User" }],
+        rowCount: 1,
+      };
 
-  //     const result = await repository.create({ email: "test@example.com" });
-  //     expect(result).toEqual({ id: 1, email: "test@example.com" });
-  //   });
+      pool.query.mockResolvedValueOnce({
+        rows: [] as never[],
+        rowCount: 0,
+      } as never); // No existing record
+      pool.query.mockResolvedValueOnce(mockResult as never); // Inserted record
 
-  it("should create a new record when unique field is not present", async () => {
-    const mockData = { email: "test@example.com" };
-    const mockResult = { id: "1", email: "test@example.com" };
+      const result = await repository.create(userData);
 
-    jest.spyOn(repository, "publicFindByUniqueField").mockResolvedValue(null);
-    jest
-      .spyOn(repository, "publicBuildInsertQuery")
-      .mockReturnValue(
-        Promise.resolve({ query: "INSERT INTO ...", values: [] })
+      expect(pool.query).toHaveBeenCalledTimes(2);
+      expect(pool.query).toHaveBeenCalledWith(
+        "SELECT * FROM users WHERE email = $1",
+        ["test@example.com"]
       );
-    jest
-      .spyOn(repository, "publicExecuteQuery")
-      .mockResolvedValue({ rows: [mockResult], rowCount: 1 });
+      expect(pool.query).toHaveBeenCalledWith(
+        "INSERT INTO users (email, name) VALUES ($1, $2) RETURNING *",
+        ["test@example.com", "Test User"]
+      );
+      expect(result).toEqual(mockResult.rows[0]);
+    });
 
-    jest
-      .spyOn(repository, "publicProcessResult")
-      .mockReturnValue(Promise.resolve(mockResult));
-    const result = await repository.create(mockData);
+    it("should throw an error if record with unique field already exists", async () => {
+      const userData: Partial<User> = {
+        email: "test@example.com",
+      };
+      const existingRecord = {
+        rows: [{ id: "1", email: "test@example.com", name: "Existing User" }],
+        rowCount: 1,
+      };
 
-    expect(result).toEqual(mockResult);
+      pool.query.mockResolvedValueOnce(existingRecord as never);
+
+      await expect(repository.create(userData)).rejects.toThrow(AppError);
+      expect(pool.query).toHaveBeenCalledTimes(1);
+      expect(pool.query).toHaveBeenCalledWith(
+        "SELECT * FROM users WHERE email = $1",
+        ["test@example.com"]
+      );
+    });
+
+    describe("update", () => {
+      it("should update an existing record", async () => {
+        const userId = "1";
+        const mockResult = {
+          rows: [{ id: "1", email: "test@example.com", name: "Updated Name" }],
+          rowCount: 1,
+        };
+
+        pool.query.mockResolvedValueOnce(mockResult as never);
+
+        const result = await repository.update(userId, mockUser);
+
+        expect(pool.query).toHaveBeenCalledTimes(1);
+        expect(pool.query).toHaveBeenCalledWith(
+          'UPDATE users SET "name" = COALESCE($1, "name") WHERE id = $2 RETURNING *',
+          ["Updated Name", "1"]
+        );
+        expect(result).toEqual(mockResult.rows[0]);
+      });
+
+      it("should return null when updating a non-existent record", async () => {
+        const userId = "999";
+
+        const mockResult = {
+          rows: [],
+          rowCount: 0,
+        };
+
+        pool.query.mockResolvedValueOnce(mockResult as never);
+        const result = await repository.update(userId, mockUser);
+
+        expect(pool.query).toHaveBeenCalledTimes(1);
+        expect(pool.query).toHaveBeenCalledWith(
+          'UPDATE users SET "name" = COALESCE($1, "name") WHERE id = $2 RETURNING *',
+          ["Updated Name", "999"]
+        );
+        expect(result).toBeNull();
+      });
+
+      it("should handle multiple field updates", async () => {
+        const userId = "1";
+        const mockResult = {
+          rows: [{ id: "1", email: "new@example.com", name: "Updated Name" }],
+          rowCount: 1,
+        };
+
+        pool.query.mockResolvedValueOnce(mockResult as never);
+
+        const result = await repository.update(userId, mockUser);
+
+        expect(pool.query).toHaveBeenCalledTimes(1);
+        expect(pool.query).toHaveBeenCalledWith(
+          'UPDATE users SET "name" = COALESCE($1, "name"), "email" = COALESCE($2, "email") WHERE id = $3 RETURNING *',
+          ["Updated Name", "new@example.com", "1"]
+        );
+        expect(result).toEqual(mockResult.rows[0]);
+      });
+
+      it("should throw an error when database query fails", async () => {
+        const userId = "1";
+
+        pool.query.mockRejectedValueOnce(new Error("Database error") as never);
+
+        await expect(repository.update(userId, mockUser)).rejects.toThrow(
+          AppError
+        );
+        expect(pool.query).toHaveBeenCalledTimes(1);
+      });
+    });
   });
-
-  // Dodaj więcej testów dla innych metod
 });

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction, query } from "express";
 import uuid4 from "uuid4";
 import { Pool, QueryResult } from "pg";
+import { User } from "../models/user";
 
 export const mockRequest = {
   params: { id: uuid4() },
@@ -26,3 +27,9 @@ export const mockNext = jest.fn() as unknown as NextFunction;
 export const mockPool = {
   query: jest.fn(),
 } as unknown as Pool;
+
+export const mockUser: Partial<User> = {
+  id: uuid4(),
+  email: "test@gmail.com",
+  todos: [],
+};
