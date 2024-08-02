@@ -39,7 +39,7 @@ passport.deserializeUser(async (user: User, done) => {
 });
 
 export default passport.use(
-  new Strategy(strategyOptions, async (accessToken, __, profile, done) => {
+  new Strategy(strategyOptions, async (_, __, profile, done) => {
     const account = profile._json;
     let user;
 
