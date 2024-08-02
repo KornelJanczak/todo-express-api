@@ -33,3 +33,24 @@ export const mockUser: Partial<User> = {
   email: "test@gmail.com",
   todos: [],
 };
+
+export const mockStrategy = jest.fn().mockImplementation(() => {
+  return {
+    authenticate: jest.fn((req, options) => {
+      req.user = { id: "123", email: "test@example.com" };
+      return options.success(req.user);
+    }),
+  };
+});
+
+export const mockPassport = {
+  initialize: jest.fn(
+    () => (req: Request, res: Response, next: NextFunction) => next()
+  ),
+  session: jest.fn(
+    () => (req: Request, res: Response, next: NextFunction) => next()
+  ),
+  authenticate: jest.fn(
+    () => (req: Request, res: Response, next: NextFunction) => next()
+  ),
+};
