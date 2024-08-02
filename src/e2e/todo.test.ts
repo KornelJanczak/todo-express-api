@@ -2,8 +2,12 @@ import request from "supertest";
 import express from "express";
 import createApp from "../app";
 import jwt from "jsonwebtoken";
+import { generateTestToken } from "../utils/helpers";
+import { mockPassport } from "../__mocks__";
 
+jest.mock("passport");
 
+jest.mock("passport-google-oauth20");
 
 describe("GET", () => {
   let app: express.Application;
@@ -11,12 +15,7 @@ describe("GET", () => {
 
   beforeAll(() => {
     app = createApp();
-
-    token = jwt.sign(
-      { user_id: "testuser", email: "testuser@example.com" }, // Payload
-      process.env.JWT_SECRET!, // Sekret do podpisania tokenu
-      { expiresIn: "1h" } // Opcje tokenu)
-    );
+    token = generateTestToken({ userId: "123", email: "test@example.com" });
   });
 
   it("should get todos and return status 200", async () => {
