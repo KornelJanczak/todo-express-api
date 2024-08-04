@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import { Pool } from "pg";
 import { CoreRepository } from "../repositories/coreRepository";
 import { AppError } from "../errors/appError";
