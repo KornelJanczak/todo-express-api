@@ -8,15 +8,10 @@ import cookieParser from "cookie-parser";
 import cookieSession from "cookie-session";
 import { errorHandler } from "./middlewares/errorHandler";
 
-const PORT = process.env.PORT || 3000;
 const SESSION_EXPIRY_DATE = 60 * 60000;
 
 export default function createApp(): Application {
   const app: Application = express();
-
-  app.listen(PORT, () => {
-    console.log("Server is running on port " + PORT);
-  });
 
   app.use(express.json());
   app.use(
@@ -38,6 +33,7 @@ export default function createApp(): Application {
       },
     })
   );
+
   app.use(passport.initialize());
   app.use(passport.session());
   app.use("/", routes());
