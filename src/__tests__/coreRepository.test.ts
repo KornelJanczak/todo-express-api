@@ -2,6 +2,7 @@
 import { Pool } from "pg";
 import { CoreRepository } from "../repositories/coreRepository";
 import { AppError } from "../errors/appError";
+import { describe, it, beforeEach, expect } from "@jest/globals";
 
 import { User } from "../models/user";
 import { mockUser } from "../__mocks__";
