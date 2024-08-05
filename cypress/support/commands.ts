@@ -60,8 +60,11 @@ Cypress.Commands.add("loginByGoogleApi", () => {
     cy.request({
       method: "GET",
       url: "https://www.googleapis.com/oauth2/v3/userinfo",
-      headers: { Authorization: `Bearer ${access_token}` },
-    }).then(({ body }) => {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+        Cookie: `${access_token}`,
+      },
+    }).then(({ body, headers }) => {
       cy.log(body);
       const userItem = {
         token: id_token,
@@ -73,9 +76,16 @@ Cypress.Commands.add("loginByGoogleApi", () => {
           imageUrl: body.picture,
         },
       };
+      
+      cy.getCookies().then((cookies) => {
+        // cookies to tablica obiektów ciasteczek
+        cookies.forEach((cookie) => {
+          cy.log(`Nazwa ciasteczka: ${cookie.name}, Wartość: ${cookie.value}`);
+        });
+      });
 
       window.localStorage.setItem("googleCypress", JSON.stringify(userItem));
-      cy.visit("/");
+      // cy.visit("/");
     });
   });
 });

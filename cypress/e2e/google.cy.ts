@@ -6,19 +6,34 @@ describe("Oauth feature apis", () => {
   beforeEach("generate token", () => {
     //to get the token id(access token)\
 
-    cy.loginByGoogleApi();
+    cy.loginByGoogleApi().then(() => {
+      // cy.wrap(window.localStorage.getItem("googleCypress")).as("accessToken");
+      const tokenObject = JSON.parse(
+        window.localStorage.getItem("googleCypress") || "{}"
+      );
+      access_token = tokenObject.token || "";
+      cy.wrap(access_token).as("accessToken");
+    });
+    access_token = window.localStorage.getItem("googleCypress") || "";
+    console.log(access_token, "access token");
+
+    cy.log("Hello");
   });
   it("Get todos", () => {
-    cy.request({
-      method: "POST",
-      url: "/api/todos",
-      headers: {
-        Authorization: "Bearer " + access_token,
-        // Cookie: "",
-      },
-    }).then((response) => {
-      cy.log(JSON.stringify(response));
-      expect(response.status).to.equal(200);
+    cy.get("@accessToken").then((accessToken) => {
+      cy.request({
+        method: "GET",
+        url: "/api/todo",
+        headers: {
+          //@ts-ignore
+          Authorization: `Bearer ${accessToken}`,
+          Cookie:
+            "session.sig=HNNNL0A41LhS-QJOTbX8-RFv9iw; session=eyJwYXNzcG9ydCI6eyJ1c2VyIjp7ImlkIjoiMTA0MjU3NjQyODAyOTY2Mjk2OTM1IiwiZW1haWwiOiJrb3JuZWxqYW5jemFrMTBAZ21haWwuY29tIn19fQ==;",
+        },
+      }).then((response) => {
+        cy.log(JSON.stringify(response));
+        expect(response.status).to.equal(200);
+      });
     });
   });
 
