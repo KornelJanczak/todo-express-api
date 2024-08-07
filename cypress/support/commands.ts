@@ -42,10 +42,6 @@ Cypress.Commands.add("loginByGoogleApi", () => {
     method: "POST",
     url: "https://www.googleapis.com/oauth2/v4/token",
     body: {
-      // access_token:
-      //   "ya29.a0AcM612xbK-xQNxmi8tx-2p7vRa0TR6Ep-PBjQr_1NLVGIN2UzRBAtJtjzxiL2w0yh-_1UFRiqnAkZwMQcZT6xMFXd5oNK4OPB1Mbw6GSz5XYv4o6yd6OKC3VQzQ0cvJ8zlR_QZwtaEXib76o1Wf6jy5t_mwpj20OnN3PaCgYKAV0SARESFQHGX2MiNDZoDdSMOQdfWpAwhmDgpw0171",
-      // id_token:
-      //   "eyJhbGciOiJSUzI1NiIsImtpZCI6ImUyNmQ5MTdiMWZlOGRlMTMzODJhYTdjYzlhMWQ2ZTkzMjYyZjMzZTIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI0MDc0MDg3MTgxOTIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0MDc0MDg3MTgxOTIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDQyNTc2NDI4MDI5NjYyOTY5MzUiLCJlbWFpbCI6Imtvcm5lbGphbmN6YWsxMEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6InZ4a0o0UXA3Xy03NjZoVVcwczBoUHciLCJpYXQiOjE3MjI3ODgyNDQsImV4cCI6MTcyMjc5MTg0NH0.SowEcFS3tx30FaTgBVnAwGmXVt-JbFxbTlQFQhbypPedLveeHBQ7vRs_CGqDZek46HHvpKZ_JTicSjn-kDWu--2gtCNTm5qQS24CWYovKXEiPS9fvlx9wpyL1KfKScx6HSZeAorJQZhtgHbgLUbYvaOH2Noa9PcPZ0RZcQlT1QUmnVah2gsw6hVr9CvLuLZt5qt8rUPdh6PHmoIA2Gzv59ErERDrGHMbEVGJZU80jiiyC8A3YLoHPlEX2M0h9AYBklHCmcO-ZUyTh0W-i0hHYXXn5COWLklg2-MkEvUjsfXOxr2qF4Wcb92CYjgtpXj8zP7_41ueFB2-ZdnG81betA",
       grant_type: "refresh_token",
       client_id: Cypress.env("googleClientId"),
       client_secret: Cypress.env("googleClientSecret"),
@@ -76,7 +72,7 @@ Cypress.Commands.add("loginByGoogleApi", () => {
           imageUrl: body.picture,
         },
       };
-      
+
       cy.getCookies().then((cookies) => {
         // cookies to tablica obiektów ciasteczek
         cookies.forEach((cookie) => {
