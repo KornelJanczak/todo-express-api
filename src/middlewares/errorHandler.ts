@@ -19,7 +19,7 @@ export function errorHandler(
 
   const responseBody = {
     statusCode,
-    messsage: message,
+    message,
     stack: process.env.NODE_ENV === "production" ? "🥞" : err.stack,
   };
 
