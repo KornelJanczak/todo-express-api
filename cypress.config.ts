@@ -3,12 +3,9 @@ import { defineConfig } from "cypress";
 require("dotenv").config();
 
 export default defineConfig({
-  projectId: '5x15rw',
+  projectId: process.env.PROJECT_ID,
   e2e: {
-    baseUrl: 'http://localhost:3000',
-    setupNodeEvents(on, config) {
-      // implement node event listeners here
-    },
+    baseUrl: process.env.BASE_URL,
   },
   env: {
     googleClientId: process.env.GOOGLE_CLIENT_ID,
